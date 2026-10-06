@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NightScript">
+<meta name="description" content="Record mantras in your own voice. Fall asleep to them under theta binaural beats. Your voice. Your subconscious. Your script.">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<title>NightScript — Speak it. Sleep on it. Become it.</title>
+<style>
+:root{
+  --bg1:#0a0a18; --bg2:#1b1035;
+  --card:rgba(255,255,255,.06); --card2:rgba(255,255,255,.1);
+  --line:rgba(255,255,255,.12);
+  --txt:#eceaf6; --dim:#a9a3c2;
+  --acc:#8b5cf6; --acc2:#c4b5fd; --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  background:
+    radial-gradient(1100px 700px at 85% -10%, #2a1b4d 0%, transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, #11244d 0%, transparent 55%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  background-attachment:fixed;
+  color:var(--txt); min-height:100vh;
+}
+.app{max-width:540px;margin:0 auto;padding:20px 16px 96px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{font-size:22px;font-weight:700;letter-spacing:.3px}
+.logo span{color:var(--acc2)}
+.tagline{font-size:12px;color:var(--dim);margin-top:2px}
+.streak{font-size:13px;color:var(--warn);background:var(--card);border:1px solid var(--line);
+  padding:6px 12px;border-radius:999px;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.card h3{font-size:14px;font-weight:600;color:var(--acc2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.note{font-size:13px;color:var(--dim);line-height:1.5}
+.banner{display:flex;gap:10px;align-items:center;background:rgba(139,92,246,.12);
+  border:1px solid rgba(139,92,246,.35);border-radius:14px;padding:12px 14px;font-size:13px;margin-bottom:14px;line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;
+  color:var(--dim);font-size:13px;cursor:pointer;transition:.15s}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.preset{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid var(--line);
+  border-radius:14px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.preset.on{border-color:var(--acc);background:rgba(139,92,246,.14)}
+.preset .pn{font-size:15px;font-weight:600}
+.preset .pd{font-size:12px;color:var(--dim);margin-top:2px}
+.preset .tick{font-size:18px;color:var(--acc2);opacity:0;}
+.preset.on .tick{opacity:1}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0 4px}
+.row label{font-size:13px;color:var(--dim)}
+.row output{font-size:13px;color:var(--txt);min-width:46px;text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:26px}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);cursor:pointer;user-select:none}
+.switch input{accent-color:var(--acc);width:18px;height:18px}
+.bigbtn{display:block;width:100%;padding:18px;font-size:17px;font-weight:700;border:none;border-radius:16px;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;box-shadow:0 8px 30px rgba(124,58,237,.35)}
+.bigbtn:active{transform:scale(.985)}
+.btn{padding:9px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card2);
+  color:var(--txt);font-size:13px;cursor:pointer}
+.btn.acc{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn.danger{color:var(--bad);border-color:rgba(248,113,113,.4)}
+.btn:disabled{opacity:.45;cursor:default}
+.mrow{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:none}
+.mrow .mt{flex:1;font-size:14px;line-height:1.45}
+.mrow .cat{font-size:10px;color:var(--acc2);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px}
+.done{color:var(--good);font-size:13px;white-space:nowrap}
+.vrow{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.vrow:last-child{border-bottom:none}
+.vrow .mt{flex:1;font-size:14px;line-height:1.4}
+.vrow .meta{font-size:11px;color:var(--dim);margin-top:3px}
+.iconbtn{background:none;border:none;font-size:19px;cursor:pointer;padding:6px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;
+  background:rgba(10,10,24,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding:8px 0 calc(10px + env(safe-area-inset-bottom));z-index:50}
+nav button{background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;width:72px}
+nav button .ic{font-size:20px}
+nav button.on{color:var(--acc2)}
+.modal{position:fixed;inset:0;background:rgba(5,5,13,.86);backdrop-filter:blur(6px);display:none;
+  align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.show{display:flex}
+.sheet{background:#17122b;border:1px solid var(--line);border-radius:22px;padding:24px;max-width:460px;width:100%;
+  max-height:86vh;overflow-y:auto}
+.sheet h2{font-size:19px;margin-bottom:12px}
+.sheet .mantra-big{font-size:21px;line-height:1.5;font-weight:600;text-align:center;margin:18px 0;color:var(--acc2)}
+.recdot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--bad);margin-right:8px;
+  animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.center{text-align:center}
+.gap8{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+/* Session overlay */
+#session{position:fixed;inset:0;background:#04040c;display:none;flex-direction:column;align-items:center;
+  justify-content:center;z-index:90;padding:30px;text-align:center}
+#session.show{display:flex}
+.breath{width:150px;height:150px;border-radius:50%;margin-bottom:34px;
+  background:radial-gradient(circle at 35% 35%, rgba(196,181,253,.5), rgba(124,58,237,.18) 60%, transparent 75%);
+  border:1px solid rgba(139,92,246,.4);
+  animation:breathe 10s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.78);opacity:.55}50%{transform:scale(1.12);opacity:1}}
+#sesMantra{font-size:22px;line-height:1.6;font-weight:600;color:var(--acc2);max-width:420px;min-height:78px}
+#sesInfo{font-size:13px;color:var(--dim);margin-top:16px}
+#sesElapsed{font-size:15px;color:var(--txt);margin-top:6px;font-variant-numeric:tabular-nums}
+.sesCtl{margin-top:26px;width:100%;max-width:340px}
+.sesCtl .row{margin:6px 0}
+#toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:#272145;color:var(--txt);
+  border:1px solid var(--line);padding:11px 18px;border-radius:12px;font-size:13px;z-index:200;display:none;
+  max-width:88vw;text-align:center}
+input[type=text]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  color:var(--txt);padding:12px;font-size:14px;margin:8px 0}
+.hr{border:none;border-top:1px solid var(--line);margin:14px 0}
+.small{font-size:12px;color:var(--dim);line-height:1.55}
+h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="logo">🌙 Night<span>Script</span></div>
+      <div class="tagline">Speak it. Sleep on it. Become it.</div>
+    </div>
+    <div class="streak" id="streakBadge">🔥 0 nights</div>
+  </header>
+
+  <!-- ============ TONIGHT ============ -->
+  <section id="scr-tonight">
+    <div class="banner">🎧 <span><b>Stereo headphones required.</b> Binaural beats only work when each ear hears a slightly different tone.</span></div>
+
+    <div class="card">
+      <h3>Tonight's Mantra Loop</h3>
+      <div class="note" id="loopSummary">No mantras recorded yet.</div>
+      <div class="gap8" style="justify-content:flex-start">
+        <button class="btn" onclick="nav('voice')">Manage my mantras →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Brainwave Program</h3>
+      <div id="presetList"></div>
+    </div>
+
+    <div class="card">
+      <h3>Session Settings</h3>
+      <div class="row"><label>Sleep timer</label></div>
+      <div class="chips" id="timerChips"></div>
+      <div class="row"><label>Pause between mantras</label><output id="gapOut">4s</output></div>
+      <input type="range" id="gapSlider" min="2" max="12" step="1" value="4">
+      <div class="row"><label>Voice volume</label><output id="voiceOut">90%</output></div>
+      <input type="range" id="voiceSlider" min="0" max="100" step="5" value="90">
+      <div class="row"><label>Beat volume</label><output id="beatOut">50%</output></div>
+      <input type="range" id="beatSlider" min="0" max="100" step="5" value="50">
+      <div class="row">
+        <label class="switch"><input type="checkbox" id="noiseChk" checked> Pink-noise bed (soft ocean of sound under the beats)</label>
+      </div>
+    </div>
+
+    <button class="bigbtn" onclick="beginSession()">☾ &nbsp;Begin Sleep Session</button>
+    <p class="small center" style="margin-top:12px">Lie down, close your eyes, listen to your own voice.<br>Keep volume low and comfortable.</p>
+  </section>
+
+  <!-- ============ LIBRARY ============ -->
+  <section id="scr-library" hidden>
+    <div class="card">
+      <h3>Mantra Library — 50 affirmations</h3>
+      <div class="note">Pick a mantra, record it <b>in your own voice</b>. Your subconscious trusts no voice more than yours.</div>
+      <div class="chips" id="catChips" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="mantraList"></div>
+  </section>
+
+  <!-- ============ MY VOICE ============ -->
+  <section id="scr-voice" hidden>
+    <div class="card">
+      <h3>Write Your Own</h3>
+      <div class="note">Present tense. Positive. First person. Short enough to say in one breath.</div>
+      <input type="text" id="customText" placeholder="I am ... / I have ... / Every day I ...">
+      <button class="btn acc" onclick="recordCustom()">🎙️ Record this mantra</button>
+    </div>
+    <div class="card">
+      <h3>My Recorded Mantras <span id="recCount" style="color:var(--dim)"></span></h3>
+      <div class="note" style="margin-bottom:6px">Checked mantras play in tonight's loop.</div>
+      <div id="voiceList"><div class="note">Nothing recorded yet — grab one from the Library.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="scr-about" hidden>
+    <div class="card">
+      <h3>How NightScript Works</h3>
+      <div class="small">
+        <b>1. Record.</b> Choose mantras and record them in your own voice.<br><br>
+        <b>2. Descend.</b> At bedtime, put on headphones. Binaural beats gently guide your brain from alert (alpha) down through <b>theta — the hypnagogic doorway state</b> where the subconscious is most open to suggestion.<br><br>
+        <b>3. Program.</b> Your own voice repeats your chosen mantras softly as you drift off, planting them in the most receptive minutes of your day.<br><br>
+        <b>4. Reinforce.</b> Use the <b>Morning Primer</b> (alpha 10 Hz) for 10 minutes on waking, keep your streak alive, and re-record mantras every 21 nights as your goals evolve.
+      </div>
+      <h4 class="sec">The 21-Night Program</h4>
+      <div class="small">Pick 3–5 mantras maximum. Repetition beats variety — the subconscious learns by hearing the same message night after night. After 21 nights, rotate in a new set.</div>
+      <h4 class="sec">Safety</h4>
+      <div class="small">NightScript is a relaxation and self-development tool, <b>not medical treatment</b>. Do not use binaural beats if you have epilepsy, a seizure disorder, or a heart-rhythm device without asking your doctor. Never listen while driving. Keep volume low — this is a whisper to your mind, not a concert.</div>
+      <h4 class="sec">Privacy</h4>
+      <div class="small">Everything stays on this device. Your voice recordings never leave your phone or computer. No account, no cloud, no tracking.</div>
+      <h4 class="sec">Coming Soon</h4>
+      <div class="small">• <b>Voice cloning</b> — record 60 seconds once, and every mantra in the library is generated in your voice automatically.<br>• Native iPhone/Android apps with screen-off all-night playback.<br>• Progress journal and dream log.</div>
+      <div class="small" style="margin-top:14px;opacity:.6">NightScript prototype v0.1</div>
+    </div>
+  </section>
+</div>
+
+<!-- Bottom nav -->
+<nav>
+  <button id="nav-tonight" class="on" onclick="nav('tonight')"><span class="ic">🌙</span>Tonight</button>
+  <button id="nav-library" onclick="nav('library')"><span class="ic">📖</span>Library</button>
+  <button id="nav-voice" onclick="nav('voice')"><span class="ic">🎙️</span>My Voice</button>
+  <button id="nav-about" onclick="nav('about')"><span class="ic">✨</span>About</button>
+</nav>
+
+<!-- Session overlay -->
+<div id="session">
+  <div class="breath"></div>
+  <div id="sesMantra">…</div>
+  <div id="sesInfo"></div>
+  <div id="sesElapsed">00:00</div>
+  <div class="sesCtl">
+    <div class="row"><label>Voice</label><input type="range" id="sesVoice" min="0" max="100" step="5" style="width:65%"></div>
+    <div class="row"><label>Beats</label><input type="range" id="sesBeat" min="0" max="100" step="5" style="width:65%"></div>
+  </div>
+  <div class="gap8"><button class="btn" onclick="endSession(false)">End Session</button></div>
+</div>
+
+<!-- Recorder modal -->
+<div class="modal" id="recModal">
+  <div class="sheet">
+    <h2 id="recTitle">Record Mantra</h2>
+    <div class="note">Speak slowly, warmly, with certainty — like you're telling a close friend a fact.</div>
+    <div class="mantra-big" id="recText"></div>
+    <div class="center" id="recStatus"></div>
+    <div class="center" style="margin-top:10px">
+      <audio id="recPreview" controls style="width:100%;display:none"></audio>
+    </div>
+    <div class="gap8">
+      <button class="btn acc" id="recBtn" onclick="toggleRec()">● Start Recording</button>
+      <button class="btn" id="recSave" onclick="saveRec()" disabled>💾 Save</button>
+      <button class="btn danger" onclick="closeRec()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Welcome modal -->
+<div class="modal" id="welcome">
+  <div class="sheet">
+    <h2>🌙 Welcome to NightScript</h2>
+    <div class="small">
+      In the minutes before sleep your brain slides into <b>theta state</b> — the same state hypnotists use, when the critical filter of the conscious mind steps aside and the subconscious listens.<br><br>
+      NightScript lets you record life-changing mantras <b>in your own voice</b> and plays them back softly, under theta binaural beats, exactly in that window.<br><br>
+      <b>You'll need:</b> 🎧 stereo headphones · 🎙️ microphone permission (recordings stay on this device)<br><br>
+      <b>Please note:</b> This is a relaxation &amp; self-development tool, not medical treatment. Skip binaural beats if you have epilepsy or a seizure disorder. Never use while driving.
+    </div>
+    <div class="gap8"><button class="btn acc" onclick="closeWelcome()">I understand — let's begin</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<audio id="voicePlayer"></audio>
+
+<script>
+'use strict';
+/* ========================= DATA ========================= */
+const CATS = ['Health','Success','Spirituality','Relationships','Daily Living'];
+const MANTRAS = [
+ ['Health','My body is healing itself more completely every day.'],
+ ['Health','Every cell in my body vibrates with energy and health.'],
+ ['Health','I am strong, well rested, and full of life.'],
+ ['Health','I choose foods and habits that nourish me.'],
+ ['Health','My mind is calm, my body is relaxed, my health is improving.'],
+ ['Health','I sleep deeply and wake up restored.'],
+ ['Health','My immune system is powerful and protects me.'],
+ ['Health','Comfort and ease are returning to my body.'],
+ ['Health','I treat my body with love and respect.'],
+ ['Health','Health flows through me effortlessly.'],
+ ['Success','I am building wealth every single day.'],
+ ['Success','Money flows to me from expected and unexpected sources.'],
+ ['Success','I make decisions with clarity and confidence.'],
+ ['Success','I am worthy of extraordinary success.'],
+ ['Success','Opportunities find me because I am prepared.'],
+ ['Success','I finish what I start, and I start what matters.'],
+ ['Success','My work creates massive value, and I am rewarded for it.'],
+ ['Success','I think like a winner, act like a winner, and I win.'],
+ ['Success','Every setback is a setup for my next breakthrough.'],
+ ['Success','I am becoming the most successful version of myself.'],
+ ['Spirituality','I am connected to something greater than myself.'],
+ ['Spirituality','I trust the path that is unfolding before me.'],
+ ['Spirituality','Peace begins within me and radiates outward.'],
+ ['Spirituality','I release what I cannot control.'],
+ ['Spirituality','Gratitude fills my heart and transforms my life.'],
+ ['Spirituality','I am exactly where I need to be.'],
+ ['Spirituality','Stillness is my source of strength.'],
+ ['Spirituality','I forgive myself and others, and I am free.'],
+ ['Spirituality','My spirit is calm, clear, and unshakeable.'],
+ ['Spirituality','I live with purpose, presence, and peace.'],
+ ['Relationships','I give love freely and receive love openly.'],
+ ['Relationships','I attract people who respect and value me.'],
+ ['Relationships','I listen deeply and speak with kindness.'],
+ ['Relationships','My relationships grow stronger every day.'],
+ ['Relationships','I am patient, present, and loving with the people I care about.'],
+ ['Relationships','I set healthy boundaries with ease and grace.'],
+ ['Relationships','I am worthy of deep, lasting love.'],
+ ['Relationships','I bring out the best in others, and they bring out the best in me.'],
+ ['Relationships','Old wounds are healing; my heart is open.'],
+ ['Relationships','I am a source of calm and strength for my family.'],
+ ['Daily Living','I wake up with energy and purpose.'],
+ ['Daily Living','Today I focus on what matters most.'],
+ ['Daily Living','I am calm under pressure.'],
+ ['Daily Living','I handle challenges with patience and skill.'],
+ ['Daily Living','Small consistent steps are building my extraordinary life.'],
+ ['Daily Living','I am organized, focused, and effective.'],
+ ['Daily Living','I let go of today and sleep in total peace.'],
+ ['Daily Living','Tomorrow is full of possibility, and I am ready for it.'],
+ ['Daily Living','I control my attention, and my attention creates my life.'],
+ ['Daily Living','Every day, in every way, I am getting better and better.']
+];
+const PRESETS = {
+ descent:  {name:'Sleep Descent ★ recommended', desc:'Alpha 10 Hz → Theta 6 → Theta 4 → Delta 2.5 over 30 min — mirrors your brain\'s natural fall into sleep', sched:[[0,10],[600,6],[1200,4],[1800,2.5]]},
+ theta:    {name:'Theta Hold — 6 Hz', desc:'Classic subconscious-programming frequency, steady all session', sched:[[0,6]]},
+ schumann: {name:'Schumann — 7.83 Hz', desc:'Earth\'s resonance frequency; light theta, grounding', sched:[[0,7.83]]},
+ deep:     {name:'Deep Theta — 4.5 Hz', desc:'Deep trance and meditation range', sched:[[0,4.5]]},
+ delta:    {name:'Delta Sleep — 2.5 Hz', desc:'For staying asleep; use with all-night timer', sched:[[0,2.5]]},
+ morning:  {name:'Morning Primer — Alpha 10 Hz', desc:'10-minute reinforcement on waking: same mantras, alert-relaxed state', sched:[[0,10]]}
+};
+const TIMERS = [20,30,45,60,90,'∞'];
+
+/* ========================= STATE ========================= */
+let S = Object.assign({preset:'descent',timer:45,gap:4,voiceVol:90,beatVol:50,noise:true},
+          JSON.parse(localStorage.ds_set||'{}'));
+function saveS(){localStorage.ds_set=JSON.stringify(S);}
+let recsCache = [];
+
+/* ========================= HELPERS ========================= */
+const $ = id => document.getElementById(id);
+function toast(msg,ms){ const t=$('toast'); t.textContent=msg; t.style.display='block';
+  clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',ms||2600); }
+function fmt(sec){const m=Math.floor(sec/60),s=Math.floor(sec%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+
+/* ========================= INDEXEDDB ========================= */
+function dbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('nightscript',1);
+ r.onupgradeneeded=e=>{e.target.result.createObjectStore('recs',{keyPath:'id',autoIncrement:true});};
+ r.onsuccess=e=>res(e.target.result); r.onerror=()=>rej(r.error);});}
+async function dbAll(){const d=await dbOpen();return new Promise(res=>{
+ const q=d.transaction('recs').objectStore('recs').getAll(); q.onsuccess=()=>res(q.result||[]);});}
+async function dbAdd(rec){const d=await dbOpen();return new Promise(res=>{
+ const q=d.transaction('recs','readwrite').objectStore('recs').add(rec); q.onsuccess=()=>res(q.result);});}
+async function dbPut(rec){const d=await dbOpen();return new Promise(res=>{
+ const q=d.transaction('recs','readwrite').objectStore('recs').put(rec); q.onsuccess=()=>res();});}
+async function dbDel(id){const d=await dbOpen();return new Promise(res=>{
+ const q=d.transaction('recs','readwrite').objectStore('recs').delete(id); q.onsuccess=()=>res();});}
+async function refreshRecs(){recsCache=await dbAll(); renderVoice(); renderLoopSummary(); renderMantras();}
+
+/* ========================= NAV ========================= */
+function nav(k){
+ ['tonight','library','voice','about'].forEach(s=>{
+   $('scr-'+s).hidden = (s!==k);
+   $('nav-'+s).classList.toggle('on', s===k);
+ });
+ window.scrollTo(0,0);
+}
+
+/* ========================= RENDER: TONIGHT ========================= */
+function renderPresets(){
+ const el=$('presetList'); el.innerHTML='';
+ Object.entries(PRESETS).forEach(([k,p])=>{
+   const d=document.createElement('div');
+   d.className='preset'+(S.preset===k?' on':'');
+   d.innerHTML=`<div><div class="pn">${p.name}</div><div class="pd">${p.desc}</div></div><div class="tick">✔</div>`;
+   d.onclick=()=>{S.preset=k; saveS(); renderPresets();};
+   el.appendChild(d);
+ });
+}
+function renderTimers(){
+ const el=$('timerChips'); el.innerHTML='';
+ TIMERS.forEach(t=>{
+   const b=document.createElement('button');
+   b.className='chip'+((S.timer===t)?' on':'');
+   b.textContent=(t==='∞')?'All night':(t+' min');
+   b.onclick=()=>{S.timer=t; saveS(); renderTimers();};
+   el.appendChild(b);
+ });
+}
+function renderLoopSummary(){
+ const on=recsCache.filter(r=>r.on);
+ $('loopSummary').innerHTML = on.length
+   ? `<b style="color:var(--txt)">${on.length} mantra${on.length>1?'s':''}</b> in tonight's loop: `+
+     on.slice(0,3).map(r=>'“'+r.text.slice(0,38)+(r.text.length>38?'…':'')+'”').join(' · ')+(on.length>3?' · …':'')
+   : 'No mantras recorded yet. Visit the <b>Library</b> to record your first one — it takes 15 seconds.';
+}
+function bindSliders(){
+ $('gapSlider').value=S.gap; $('gapOut').textContent=S.gap+'s';
+ $('voiceSlider').value=S.voiceVol; $('voiceOut').textContent=S.voiceVol+'%';
+ $('beatSlider').value=S.beatVol; $('beatOut').textContent=S.beatVol+'%';
+ $('noiseChk').checked=S.noise;
+ $('gapSlider').oninput=e=>{S.gap=+e.target.value;$('gapOut').textContent=S.gap+'s';saveS();};
+ $('voiceSlider').oninput=e=>{S.voiceVol=+e.target.value;$('voiceOut').textContent=S.voiceVol+'%';saveS();};
+ $('beatSlider').oninput=e=>{S.beatVol=+e.target.value;$('beatOut').textContent=S.beatVol+'%';saveS();};
+ $('noiseChk').onchange=e=>{S.noise=e.target.checked;saveS();};
+}
+
+/* ========================= RENDER: LIBRARY ========================= */
+let catFilter='All';
+function renderCats(){
+ const el=$('catChips'); el.innerHTML='';
+ ['All',...CATS].forEach(c=>{
+   const b=document.createElement('button');
+   b.className='chip'+(catFilter===c?' on':'');
+   b.textContent=c;
+   b.onclick=()=>{catFilter=c; renderCats(); renderMantras();};
+   el.appendChild(b);
+ });
+}
+function renderMantras(){
+ const el=$('mantraList'); el.innerHTML='';
+ MANTRAS.filter(m=>catFilter==='All'||m[0]===catFilter).forEach(m=>{
+   const done=recsCache.some(r=>r.text===m[1]);
+   const d=document.createElement('div'); d.className='mrow';
+   d.innerHTML=`<div class="mt"><span class="cat">${m[0]}</span>${m[1]}</div>`+
+     (done?`<span class="done">✓ recorded</span>`:``)+
+     `<button class="btn ${done?'':'acc'}">🎙️ ${done?'Again':'Record'}</button>`;
+   d.querySelector('button').onclick=()=>openRecorder(m[1],m[0]);
+   el.appendChild(d);
+ });
+}
+
+/* ========================= RENDER: MY VOICE ========================= */
+function renderVoice(){
+ const el=$('voiceList');
+ $('recCount').textContent=recsCache.length?`(${recsCache.length})`:'';
+ if(!recsCache.length){el.innerHTML='<div class="note">Nothing recorded yet — grab one from the Library.</div>';return;}
+ el.innerHTML='';
+ recsCache.slice().sort((a,b)=>b.created-a.created).forEach(r=>{
+   const d=document.createElement('div'); d.className='vrow';
+   const date=new Date(r.created).toLocaleDateString();
+   d.innerHTML=`<input type="checkbox" ${r.on?'checked':''} title="Play tonight" style="accent-color:var(--acc);width:18px;height:18px">`+
+     `<div class="mt">${r.text}<div class="meta">${r.cat} · ${date}</div></div>`+
+     `<button class="iconbtn" title="Play">▶️</button><button class="iconbtn" title="Delete">🗑️</button>`;
+   const [chk]=d.querySelectorAll('input');
+   const [play,del]=d.querySelectorAll('.iconbtn');
+   chk.onchange=async()=>{r.on=chk.checked; await dbPut(r); renderLoopSummary();};
+   play.onclick=()=>{const a=$('voicePlayer'); a.src=URL.createObjectURL(r.blob); a.volume=1; a.play();};
+   del.onclick=async()=>{if(confirm('Delete this recording?')){await dbDel(r.id); refreshRecs();}};
+   el.appendChild(d);
+ });
+}
+
+/* ========================= RECORDER ========================= */
+let mediaRec=null, chunks=[], recBlob=null, recMime='', recTarget=null, recStream=null;
+function pickMime(){
+ const list=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];
+ for(const m of list){ if(window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m; }
+ return '';
+}
+function openRecorder(text,cat){
+ recTarget={text,cat}; recBlob=null;
+ $('recText').textContent=text;
+ $('recTitle').textContent='Record in Your Voice';
+ $('recStatus').innerHTML='';
+ $('recPreview').style.display='none'; $('recPreview').src='';
+ $('recBtn').textContent='● Start Recording'; $('recBtn').disabled=false;
+ $('recSave').disabled=true;
+ $('recModal').classList.add('show');
+}
+function recordCustom(){
+ const t=$('customText').value.trim();
+ if(!t){toast('Type your mantra first');return;}
+ openRecorder(t,'Custom');
+}
+async function toggleRec(){
+ if(mediaRec && mediaRec.state==='recording'){ mediaRec.stop(); return; }
+ try{
+   recStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+ }catch(e){ toast('Microphone blocked — allow mic access and try again'); return; }
+ recMime=pickMime(); chunks=[];
+ mediaRec=new MediaRecorder(recStream, recMime?{mimeType:recMime}:undefined);
+ mediaRec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+ mediaRec.onstop=()=>{
+   recBlob=new Blob(chunks,{type:recMime||'audio/webm'});
+   recStream.getTracks().forEach(t=>t.stop());
+   const url=URL.createObjectURL(recBlob);
+   const pv=$('recPreview'); pv.src=url; pv.style.display='block';
+   $('recStatus').innerHTML='<span style="color:var(--good)">✓ Recorded — listen, then save or redo</span>';
+   $('recBtn').textContent='● Record Again';
+   $('recSave').disabled=false;
+ };
+ mediaRec.start();
+ $('recStatus').innerHTML='<span class="recdot"></span><span style="color:var(--bad)">Recording… speak now</span>';
+ $('recBtn').textContent='■ Stop';
+ $('recSave').disabled=true;
+}
+async function saveRec(){
+ if(!recBlob||!recTarget)return;
+ await dbAdd({text:recTarget.text,cat:recTarget.cat,blob:recBlob,mime:recMime,created:Date.now(),on:true});
+ closeRec();
+ if(recTarget.cat==='Custom')$('customText').value='';
+ toast('Saved — it will play in tonight\'s loop ✓');
+ refreshRecs();
+}
+function closeRec(){
+ if(mediaRec&&mediaRec.state==='recording')mediaRec.stop();
+ if(recStream)recStream.getTracks().forEach(t=>t.stop());
+ $('recModal').classList.remove('show');
+}
+
+/* ========================= AUDIO ENGINE ========================= */
+const eng={ctx:null,running:false,master:null,beatGain:null,noiseGain:null,oscL:null,oscR:null,noiseSrc:null,
+           timers:[],tick:null,start:0,playlist:[],idx:0,fading:false,wl:null,lastUrl:null};
+function beatGainVal(){return (S.beatVol/100)*0.22;}   // keep beats subtle even at 100%
+function noiseGainVal(){return S.noise?0.045:0;}
+async function beginSession(){
+ const on=recsCache.filter(r=>r.on);
+ if(!on.length){ toast('Record at least one mantra first — opening the Library'); nav('library'); return; }
+ const AC=window.AudioContext||window.webkitAudioContext;
+ eng.ctx=new AC(); await eng.ctx.resume();
+ const ctx=eng.ctx, t0=ctx.currentTime;
+ eng.master=ctx.createGain(); eng.master.gain.value=1; eng.master.connect(ctx.destination);
+ // --- binaural pair ---
+ eng.beatGain=ctx.createGain(); eng.beatGain.gain.value=beatGainVal(); eng.beatGain.connect(eng.master);
+ const panL=ctx.createStereoPanner(); panL.pan.value=-1; panL.connect(eng.beatGain);
+ const panR=ctx.createStereoPanner(); panR.pan.value= 1; panR.connect(eng.beatGain);
+ eng.oscL=ctx.createOscillator(); eng.oscL.type='sine'; eng.oscL.frequency.value=200; eng.oscL.connect(panL);
+ eng.oscR=ctx.createOscillator(); eng.oscR.type='sine'; eng.oscR.connect(panR);
+ const sched=PRESETS[S.preset].sched;
+ eng.oscR.frequency.setValueAtTime(200+sched[0][1],t0);
+ for(let i=1;i<sched.length;i++) eng.oscR.frequency.linearRampToValueAtTime(200+sched[i][1], t0+sched[i][0]);
+ eng.oscL.start(); eng.oscR.start();
+ // --- pink noise bed ---
+ const nlen=ctx.sampleRate*4, nbuf=ctx.createBuffer(1,nlen,ctx.sampleRate), nd=nbuf.getChannelData(0);
+ let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+ for(let i=0;i<nlen;i++){const w=Math.random()*2-1;
+   b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.96900*b2+w*0.1538520;
+   b3=0.86650*b3+w*0.3104856;b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;
+   nd[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;}
+ eng.noiseGain=ctx.createGain(); eng.noiseGain.gain.value=noiseGainVal(); eng.noiseGain.connect(eng.master);
+ eng.noiseSrc=ctx.createBufferSource(); eng.noiseSrc.buffer=nbuf; eng.noiseSrc.loop=true;
+ eng.noiseSrc.connect(eng.noiseGain); eng.noiseSrc.start();
+ // --- state & UI ---
+ eng.running=true; eng.fading=false; eng.playlist=on; eng.idx=0; eng.start=Date.now();
+ $('sesInfo').textContent=PRESETS[S.preset].name+'  ·  '+on.length+' mantra'+(on.length>1?'s':'')+'  ·  '+(S.timer==='∞'?'all night':S.timer+' min');
+ $('sesVoice').value=S.voiceVol; $('sesBeat').value=S.beatVol;
+ $('sesVoice').oninput=e=>{S.voiceVol=+e.target.value;saveS();$('voicePlayer').volume=S.voiceVol/100;};
+ $('sesBeat').oninput=e=>{S.beatVol=+e.target.value;saveS(); if(eng.beatGain)eng.beatGain.gain.value=beatGainVal();};
+ $('session').classList.add('show');
+ eng.tick=setInterval(()=>{$('sesElapsed').textContent=fmt((Date.now()-eng.start)/1000);},1000);
+ if(navigator.wakeLock){ try{eng.wl=await navigator.wakeLock.request('screen');}catch(e){} }
+ markStreak();
+ // --- timers ---
+ if(S.timer!=='∞'){
+   const total=S.timer*60*1000;
+   eng.timers.push(setTimeout(()=>fadeOut(60), Math.max(total-60000,5000)));
+   eng.timers.push(setTimeout(()=>endSession(true), total+2000));
+ }
+ playNextMantra();
+}
+function playNextMantra(){
+ if(!eng.running)return;
+ const r=eng.playlist[eng.idx % eng.playlist.length]; eng.idx++;
+ const a=$('voicePlayer');
+ if(eng.lastUrl)URL.revokeObjectURL(eng.lastUrl);
+ eng.lastUrl=URL.createObjectURL(r.blob);
+ a.src=eng.lastUrl; a.volume=(S.voiceVol/100)*(eng.fading?eng.fadeK:1);
+ $('sesMantra').textContent='“'+r.text+'”';
+ a.onended=()=>{ eng.timers.push(setTimeout(playNextMantra, S.gap*1000)); };
+ a.onerror=()=>{ eng.timers.push(setTimeout(playNextMantra, 1500)); };
+ a.play().catch(()=>{ eng.timers.push(setTimeout(playNextMantra, 1500)); });
+}
+function fadeOut(sec){
+ if(!eng.running||eng.fading)return;
+ eng.fading=true; eng.fadeK=1;
+ const step=1/(sec*4);
+ const h=setInterval(()=>{
+   if(!eng.running){clearInterval(h);return;}
+   eng.fadeK=Math.max(0,eng.fadeK-step);
+   if(eng.master)eng.master.gain.value=eng.fadeK;
+   $('voicePlayer').volume=(S.voiceVol/100)*eng.fadeK;
+   if(eng.fadeK<=0)clearInterval(h);
+ },250);
+ eng.timers.push(h);
+}
+function endSession(natural){
+ if(!eng.running)return;
+ eng.running=false;
+ eng.timers.forEach(t=>{clearTimeout(t);clearInterval(t);}); eng.timers=[];
+ if(eng.tick)clearInterval(eng.tick);
+ const a=$('voicePlayer'); a.pause(); a.onended=null; a.src='';
+ try{eng.oscL.stop();eng.oscR.stop();eng.noiseSrc.stop();}catch(e){}
+ if(eng.ctx){try{eng.ctx.close();}catch(e){}}
+ if(eng.wl){try{eng.wl.release();}catch(e){} eng.wl=null;}
+ $('session').classList.remove('show');
+ if(natural)toast('Session complete. Sleep well 🌙');
+}
+
+/* ========================= STREAK ========================= */
+function markStreak(){
+ const today=new Date().toDateString();
+ const st=JSON.parse(localStorage.ds_streak||'{}');
+ if(st.last===today)return;
+ const y=new Date(Date.now()-864e5).toDateString();
+ st.count=(st.last===y)?(st.count||0)+1:1; st.last=today;
+ localStorage.ds_streak=JSON.stringify(st); renderStreak();
+}
+function renderStreak(){
+ const st=JSON.parse(localStorage.ds_streak||'{}');
+ $('streakBadge').textContent='🔥 '+(st.count||0)+' night'+((st.count||0)===1?'':'s');
+}
+
+/* ========================= WELCOME ========================= */
+function closeWelcome(){localStorage.ds_welcome='1';$('welcome').classList.remove('show');}
+
+/* ========================= INIT ========================= */
+renderPresets(); renderTimers(); bindSliders(); renderCats(); renderStreak();
+refreshRecs();
+if(!localStorage.ds_welcome)$('welcome').classList.add('show');
+/* ========================= PWA ========================= */
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
+}
+</script>
+</body>
+</html>
