@@ -1,5 +1,5 @@
 // NightScript service worker — app-shell cache, offline-first
-const CACHE = 'nightscript-v2';
+const CACHE = 'nightscript-v3';
 const SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png', '/vendor/supabase.js'];
 
 self.addEventListener('install', e => {

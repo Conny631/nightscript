@@ -302,18 +302,15 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
 <!-- Sign-in modal (v2) -->
 <div class="modal" id="signinModal">
   <div class="sheet">
-    <h2>Sign in to NightScript</h2>
-    <div class="small">Back up your mantras, settings, and voice recordings to your private account — then sign in on any device and they're all there.</div>
+    <h2>Your NightScript account</h2>
+    <div class="small">Your recordings and progress, backed up and on every device.</div>
     <div style="height:14px"></div>
     <input type="text" id="signinEmail" placeholder="you@example.com" autocomplete="email" inputmode="email">
-    <button class="btn acc" style="width:100%" id="emailBtn" onclick="nsEmail()">Email me a sign-in link</button>
-    <div class="divider">or use a password</div>
-    <input type="password" id="signinPass" placeholder="Password (at least 8 characters)" autocomplete="current-password">
-    <div class="gap8" style="margin-top:2px">
-      <button class="btn acc" onclick="nsPassSignIn()">Sign in</button>
-      <button class="btn" onclick="nsPassSignUp()">Create account</button>
-    </div>
-    <div class="small" id="signinMsg" style="margin-top:12px">We'll email you a one-time sign-in link — no password needed. By continuing you agree to the Terms &amp; Privacy Policy.</div>
+    <input type="password" id="signinPass" placeholder="Password (at least 8 characters)" autocomplete="new-password">
+    <button class="btn acc" style="width:100%;margin-top:2px" id="authPrimaryBtn" onclick="nsAuthPrimary()">Create free account</button>
+    <div class="center" style="margin-top:10px"><button class="linkbtn" id="authModeToggle" onclick="nsToggleAuthMode()">I already have an account — sign in</button></div>
+    <div class="center" style="margin-top:6px"><button class="linkbtn" id="emailBtn" onclick="nsEmail()">Email me a one-time sign-in link instead</button></div>
+    <div class="small" id="signinMsg" style="margin-top:12px">No confirmation email needed — your account works right away. By continuing you agree to the Terms &amp; Privacy Policy.</div>
     <div class="gap8" style="margin-top:10px"><button class="btn" onclick="closeSignin()">Close</button></div>
   </div>
 </div>
@@ -627,7 +624,13 @@ const UPGRADE_CTX = {
   timer:     'Longer & all-night sleep timers are a Pro feature.',
   recording: 'Free includes 1 recording. Go Pro for unlimited.'
 };
-function openSignin(){ $('signinModal').classList.add('show'); }
+let AUTH_MODE='signup';
+function setAuthMode(m){ AUTH_MODE=m; const b=$('authPrimaryBtn'), t=$('authModeToggle'); if(!b||!t) return;
+  if(m==='signup'){ b.textContent='Create free account'; t.textContent='I already have an account — sign in'; }
+  else{ b.textContent='Sign in'; t.textContent='New here? Create a free account'; } }
+function nsToggleAuthMode(){ setAuthMode(AUTH_MODE==='signup'?'signin':'signup'); }
+function nsAuthPrimary(){ return AUTH_MODE==='signup' ? nsPassSignUp() : nsPassSignIn(); }
+function openSignin(){ let m='signup'; try{ if(localStorage.ns_auth_mode==='signin') m='signin'; }catch(e){} setAuthMode(m); $('signinModal').classList.add('show'); }
 function closeSignin(){ $('signinModal').classList.remove('show'); }
 function renderSyncPill(){
   const el=$('syncPill'); if(!el) return;
@@ -652,8 +655,8 @@ async function nsEmail(){
   if(!NS_AUTH.enabled()){ toast('Accounts come online with the next update — for now everything is saved on this device.'); return; }
   try{
     const res=await NS_AUTH.signInMagic(e); if(res.error) throw res.error;
-    $('signinMsg').innerHTML='<b style="color:var(--good)">✓ Link sent.</b> Open the email on THIS device and tap the link — you\'ll be signed in automatically.';
-    toast('Sign-in link sent — check your email ✓');
+    $('signinMsg').innerHTML='<b style="color:var(--good)">✓ Link sent.</b> It can take a minute or two, and the first one often lands in <b>Junk/Spam</b> — check there. Open the email on THIS device and tap the link.';
+    toast('Sign-in link sent — check your email (and Junk) ✓');
   }catch(err){ toast(plainAuthError(err)); }
 }
 async function nsPassSignIn(){
@@ -662,6 +665,7 @@ async function nsPassSignIn(){
   if(!p){ toast('Type your password'); return; }
   if(!NS_AUTH.enabled()){ toast('Accounts come online with the next update — for now everything is saved on this device.'); return; }
   try{ const res=await NS_AUTH.signInPassword(e,p); if(res.error) throw res.error;
+    try{ localStorage.ns_auth_mode='signin'; }catch(_e){}
     closeSignin(); toast('Signed in ✓');
   }catch(err){ toast(plainAuthError(err)); }
 }
@@ -672,9 +676,19 @@ async function nsPassSignUp(){
   if(!NS_AUTH.enabled()){ toast('Accounts come online with the next update — for now everything is saved on this device.'); return; }
   try{ const res=await NS_AUTH.signUpPassword(e,p); if(res.error) throw res.error;
     const needsConfirm = res.data && res.data.user && !res.data.session;
+    try{ localStorage.ns_auth_mode='signin'; }catch(_e){}
     if(needsConfirm){ $('signinMsg').innerHTML='<b style="color:var(--good)">✓ Account created.</b> Check your email to confirm it, then come back and sign in.'; toast('Account created — check your email ✓'); }
     else{ closeSignin(); toast('Account created ✓'); }
-  }catch(err){ toast(plainAuthError(err)); }
+  }catch(err){
+    const m=String((err&&err.message)||'').toLowerCase();
+    if(m.indexOf('already registered')>-1){
+      try{ const r2=await NS_AUTH.signInPassword(e,p); if(r2.error) throw r2.error;
+        try{ localStorage.ns_auth_mode='signin'; }catch(_e){}
+        closeSignin(); toast('You already had an account — signed in ✓'); return;
+      }catch(e2){ setAuthMode('signin'); toast('That email already has an account, but this password doesn\'t match it.'); return; }
+    }
+    toast(plainAuthError(err));
+  }
 }
 function onAcctClick(){ if(NS_AUTH.getUser()) openAccount(); else openSignin(); }
 function openAccount(){ renderAccountBody(); $('accountModal').classList.add('show'); }
