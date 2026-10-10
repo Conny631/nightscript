@@ -114,12 +114,39 @@ nav button.on{color:var(--acc2)}
 #toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:#272145;color:var(--txt);
   border:1px solid var(--line);padding:11px 18px;border-radius:12px;font-size:13px;z-index:200;display:none;
   max-width:88vw;text-align:center}
-input[type=text]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
+input[type=text],input[type=password]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
   color:var(--txt);padding:12px;font-size:14px;margin:8px 0}
 .hr{border:none;border-top:1px solid var(--line);margin:14px 0}
 .small{font-size:12px;color:var(--dim);line-height:1.55}
 h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px}
+/* ===== v2 — Pro / freemium / auth UI ===== */
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.acctbtn{font-size:12px;color:var(--txt);background:var(--card);border:1px solid var(--line);
+  padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.acctbtn:active{transform:scale(.97)}
+.acctbtn .pro,.pro{font-size:9px;font-weight:800;color:#120a24;background:linear-gradient(135deg,#c4b5fd,#8b5cf6);
+  padding:1px 6px;border-radius:999px;letter-spacing:.6px}
+.lock{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--acc2);
+  background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.4);
+  padding:3px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+.lockmini{font-size:11px;margin-left:4px;opacity:.85}
+.preset.locked,.mrow.locked{opacity:.66}
+.preset.locked{cursor:pointer}
+.chip.locked{opacity:.8;cursor:pointer}
+.sheet .price{font-size:16px;color:var(--acc2);text-align:center;margin:2px 0 6px;font-weight:700;letter-spacing:.3px}
+.sheet ul.feat{list-style:none;margin:16px 0;padding:0}
+.sheet ul.feat li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:14px;color:var(--txt);line-height:1.45}
+.sheet ul.feat li::before{content:'\2726';color:var(--acc2);font-size:13px;line-height:1.5}
+.linkbtn{background:none;border:none;color:var(--acc2);font-size:13px;cursor:pointer;text-decoration:underline;padding:8px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border-radius:12px;
+  border:1px solid var(--line);background:#fff;color:#1f2937;font-size:15px;font-weight:600;cursor:pointer}
+.gbtn .oauth-g{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  background:conic-gradient(from -45deg,#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0 100%);color:#fff;font-weight:800;font-size:12px}
+.divider{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12px;margin:14px 0}
+.divider::before,.divider::after{content:'';flex:1;border-top:1px solid var(--line)}
 </style>
+<script src="vendor/supabase.js"></script>
+<script>if(!window.supabase)document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/@supabase\/supabase-js@2"><\/script>');</script>
 </head>
 <body>
 <div class="app">
@@ -128,7 +155,11 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
       <div class="logo">🌙 Night<span>Script</span></div>
       <div class="tagline">Speak it. Sleep on it. Become it.</div>
     </div>
-    <div class="streak" id="streakBadge">🔥 0 nights</div>
+    <div class="hdr-right">
+      <button class="acctbtn" id="acctBtn" onclick="onAcctClick()">Sign In</button>
+      <div class="streak" id="streakBadge">🔥 0 nights</div>
+      <div id="syncPill" style="font-size:10px;color:var(--dim)">Saved on this device</div>
+    </div>
   </header>
 
   <!-- ============ TONIGHT ============ -->
@@ -207,10 +238,10 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
       <h4 class="sec">Safety</h4>
       <div class="small">NightScript is a relaxation and self-development tool, <b>not medical treatment</b>. Do not use binaural beats if you have epilepsy, a seizure disorder, or a heart-rhythm device without asking your doctor. Never listen while driving. Keep volume low — this is a whisper to your mind, not a concert.</div>
       <h4 class="sec">Privacy</h4>
-      <div class="small">Everything stays on this device. Your voice recordings never leave your phone or computer. No account, no cloud, no tracking.</div>
+      <div class="small">Without an account, everything stays on this device only. When you create a free account, your recordings and settings are backed up privately to your account so you can restore them on any phone or computer. Your recordings are never shared, never analyzed, never used for anything but playing them back to you. No tracking, no ads.</div>
       <h4 class="sec">Coming Soon</h4>
       <div class="small">• <b>Voice cloning</b> — record 60 seconds once, and every mantra in the library is generated in your voice automatically.<br>• Native iPhone/Android apps with screen-off all-night playback.<br>• Progress journal and dream log.</div>
-      <div class="small" style="margin-top:14px;opacity:.6">NightScript prototype v0.1</div>
+      <div class="small" style="margin-top:14px;opacity:.6;cursor:default" id="verString">NightScript v2 prototype · build 2026.10.09</div>
     </div>
   </section>
 </div>
@@ -265,6 +296,54 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
       <b>Please note:</b> This is a relaxation &amp; self-development tool, not medical treatment. Skip binaural beats if you have epilepsy or a seizure disorder. Never use while driving.
     </div>
     <div class="gap8"><button class="btn acc" onclick="closeWelcome()">I understand — let's begin</button></div>
+  </div>
+</div>
+
+<!-- Sign-in modal (v2) -->
+<div class="modal" id="signinModal">
+  <div class="sheet">
+    <h2>Sign in to NightScript</h2>
+    <div class="small">Back up your mantras, settings, and voice recordings to your private account — then sign in on any device and they're all there.</div>
+    <div style="height:14px"></div>
+    <input type="text" id="signinEmail" placeholder="you@example.com" autocomplete="email" inputmode="email">
+    <button class="btn acc" style="width:100%" id="emailBtn" onclick="nsEmail()">Email me a sign-in link</button>
+    <div class="divider">or use a password</div>
+    <input type="password" id="signinPass" placeholder="Password (at least 8 characters)" autocomplete="current-password">
+    <div class="gap8" style="margin-top:2px">
+      <button class="btn acc" onclick="nsPassSignIn()">Sign in</button>
+      <button class="btn" onclick="nsPassSignUp()">Create account</button>
+    </div>
+    <div class="small" id="signinMsg" style="margin-top:12px">We'll email you a one-time sign-in link — no password needed. By continuing you agree to the Terms &amp; Privacy Policy.</div>
+    <div class="gap8" style="margin-top:10px"><button class="btn" onclick="closeSignin()">Close</button></div>
+  </div>
+</div>
+
+<!-- Upgrade / paywall sheet (v2) -->
+<div class="modal" id="upgradeModal">
+  <div class="sheet">
+    <h2>🌙 NightScript <span style="color:var(--acc2)">Pro</span></h2>
+    <div class="price">$9.99 / month</div>
+    <div class="small center" id="upgradeCtx">Unlock the full NightScript experience.</div>
+    <ul class="feat">
+      <li>All 50 mantras across every category</li>
+      <li>All 6 brainwave programs — including the Morning Primer</li>
+      <li>Unlimited voice recordings</li>
+      <li>Every sleep timer, including all-night playback</li>
+      <li>New mantras &amp; programs as they're added</li>
+    </ul>
+    <button class="bigbtn" onclick="nsCheckout()">Upgrade — $9.99/mo</button>
+    <div class="center" style="margin-top:4px"><button class="linkbtn" onclick="nsPortal()">Restore purchase · Manage subscription</button></div>
+    <div class="gap8" style="margin-top:4px"><button class="btn" onclick="closeUpgrade()">Not now</button></div>
+    <div class="small center" style="margin-top:10px;opacity:.6">Cancel anytime. Billed monthly.</div>
+  </div>
+</div>
+
+<!-- Account sheet (v2) -->
+<div class="modal" id="accountModal">
+  <div class="sheet">
+    <h2>Your account</h2>
+    <div id="accountBody"></div>
+    <div class="gap8" style="margin-top:12px"><button class="btn" onclick="closeAccount()">Close</button></div>
   </div>
 </div>
 
@@ -337,10 +416,301 @@ const PRESETS = {
 };
 const TIMERS = [20,30,45,60,90,'∞'];
 
+/* ===================================================================
+   ===============  NIGHTSCRIPT v2 — PRO / FREEMIUM LAYER  ============
+   ===================================================================
+   Everything in this banner block is NEW in v2. v1 logic is untouched
+   except for small, clearly-marked hooks: lock badges in the three
+   renderers, preset/timer clamping in beginSession, and a single
+   auth-change refresh wired in INIT. Signed-out == Free == v1 behavior
+   for every capability that is unlocked.
+   =================================================================== */
+
+/* ----------  TIER CONFIG — single source of truth  ---------- */
+const NS_TIERS = {
+  free: {
+    id:'free', label:'Free', price:'$0',
+    maxMantras: 8,
+    maxRecordings: 1,
+    timerCapMin: 30,                 // sleep timer capped at 30 min
+    presets: ['descent','theta'],    // Sleep Descent + "Deep Sleep Theta" (Theta Hold 6 Hz)
+    // 8 strongest mantras — 1-2 per category, all 5 categories represented
+    mantras: [
+      'My body is healing itself more completely every day.',      // Health
+      'I sleep deeply and wake up restored.',                      // Health
+      'I am worthy of extraordinary success.',                     // Success
+      'I release what I cannot control.',                          // Spirituality
+      'Gratitude fills my heart and transforms my life.',          // Spirituality
+      'I am worthy of deep, lasting love.',                        // Relationships
+      'I let go of today and sleep in total peace.',               // Daily Living
+      'Every day, in every way, I am getting better and better.'   // Daily Living
+    ]
+  },
+  pro: {
+    id:'pro', label:'Pro', price:'$9.99/mo', priceAmount:9.99,
+    maxMantras: Infinity, maxRecordings: Infinity, timerCapMin: Infinity,
+    presets: '*', mantras: '*'
+  }
+};
+const FREE_MANTRA_SET = new Set(NS_TIERS.free.mantras);
+const FREE_PRESET_SET = new Set(NS_TIERS.free.presets);
+
+/* ----------  ENTITLEMENT HELPERS  ---------- */
+function isMantraLocked(text){ return !NS_BILLING.isPro() && !FREE_MANTRA_SET.has(text); }
+function isPresetLocked(key){ return !NS_BILLING.isPro() && !FREE_PRESET_SET.has(key); }
+function isTimerLocked(t){ return !NS_BILLING.isPro() && (t==='∞' || Number(t) > NS_TIERS.free.timerCapMin); }
+function currentPreset(){ return isPresetLocked(S.preset) ? 'descent' : S.preset; }   // descent is always free
+function currentTimer(){ return isTimerLocked(S.timer) ? NS_TIERS.free.timerCapMin : S.timer; }
+function recordingLimit(){ return NS_BILLING.isPro() ? Infinity : NS_TIERS.free.maxRecordings; }
+function canAddRecording(count){ const n=(typeof count==='number')?count:recsCache.length; return n < recordingLimit(); }
+
+/* ----------  NS_CONFIG — cloud project keys (fill in to switch accounts ON)  ----------
+   Leave blank => app runs exactly like v1: everything stays on this device and
+   sign-in politely explains accounts aren't live yet. No other behavior changes. */
+const NS_CONFIG = {
+  SUPABASE_URL: 'https://lfuhnwgjycqprbsrjbek.supabase.co',        // NightScript project (us-east-1), created 10-10-2026
+  SUPABASE_ANON_KEY: 'sb_publishable_fAqBIztSoWEBQOpGgdfxXA_I0c5nFVw'    // publishable key (browser-safe by design)
+};
+
+/* ----------  NS_AUTH — REAL accounts (email magic-link + password)  ----------
+   Replaced the v2 dev stub (fake localStorage session) on 2026-10-09 after a real
+   user lost recordings to the three-separate-storage-containers problem (Safari vs
+   home-screen icon vs native app). Sessions persist via the Supabase client. */
+const NS_AUTH = {
+  client:null, _user:null, _cbs:[],
+  enabled(){ return !!this.client; },
+  init(){
+    try{
+      if(NS_CONFIG.SUPABASE_URL && NS_CONFIG.SUPABASE_ANON_KEY && window.supabase && window.supabase.createClient){
+        this.client = window.supabase.createClient(NS_CONFIG.SUPABASE_URL, NS_CONFIG.SUPABASE_ANON_KEY,
+          { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
+      }
+    }catch(e){ this.client=null; }
+    if(!this.client){ this._emit(); return; }
+    const self=this;
+    this.client.auth.onAuthStateChange((evt, session)=>{
+      const prevId = self._user ? self._user.id : null;
+      self._user = session ? session.user : null;
+      self._emit();
+      const nowId = self._user ? self._user.id : null;
+      if(nowId && nowId!==prevId){ NS_SYNC.onSignedIn(); }
+      if(!nowId && prevId){ NS_SYNC.onSignedOut(); }
+    });
+  },
+  _emit(){ const u=this.getUser(); this._cbs.slice().forEach(cb=>{ try{cb(u);}catch(e){} }); },
+  getUser(){
+    if(!this._user) return null;
+    const u=this._user;
+    return { id:u.id, email:u.email||'',
+             name:(u.user_metadata&&(u.user_metadata.name||u.user_metadata.full_name))||null,
+             provider:(u.app_metadata&&u.app_metadata.provider)||'email' };
+  },
+  onAuthChange(cb){ if(typeof cb==='function'){ this._cbs.push(cb); try{cb(this.getUser());}catch(e){} }
+    return ()=>{ this._cbs=this._cbs.filter(f=>f!==cb); }; },
+  signInMagic(email){ return this.client.auth.signInWithOtp({ email:email,
+      options:{ emailRedirectTo: location.origin + location.pathname } }); },
+  signUpPassword(email,pass){ return this.client.auth.signUp({ email:email, password:pass }); },
+  signInPassword(email,pass){ return this.client.auth.signInWithPassword({ email:email, password:pass }); },
+  signOut(){ if(this.client) return this.client.auth.signOut(); return Promise.resolve(); }
+};
+
+/* ----------  NS_SYNC — cloud backup & restore  ----------
+   LOCAL-FIRST: the device copy always plays; the cloud is a backup that follows
+   the account. A sync pass = (1) pull account state, (2) RESCUE SWEEP: upload every
+   local recording that has never been backed up — this is what rescues recordings
+   stranded on a device from before the user had an account, (3) download any
+   account recordings missing on this device, (4) push the merged picture.
+   Recordings merge by UNION (nothing is auto-deleted across devices in v2.0);
+   settings: newest change wins; streak: higher count wins. */
+const NS_SYNC = {
+  status:'local', remotePro:false, _t:null, _busy:false, _again:false,
+  can(){ return NS_AUTH.enabled() && !!NS_AUTH.getUser(); },
+  setStatus(s){ this.status=s; try{ renderSyncPill(); }catch(e){} },
+  schedulePush(){ if(!this.can()) return; clearTimeout(this._t);
+    this._t=setTimeout(()=>{ this.syncAll('push'); }, 2000); },
+  onSignedIn(){ this.syncAll('full'); },
+  onSignedOut(){ this.remotePro=false; this.setStatus('local'); },
+  async syncAll(mode){
+    if(!this.can()){ this.setStatus('local'); return; }
+    if(this._busy){ this._again=true; return; }
+    if(!navigator.onLine){ this.setStatus('offline'); return; }
+    this._busy=true; this.setStatus('syncing');
+    try{
+      const uid=NS_AUTH.getUser().id, db=NS_AUTH.client;
+      /* 1 — pull account state */
+      const sel=await db.from('user_state').select('state,updated_at').eq('user_id',uid).maybeSingle();
+      if(sel.error) throw sel.error;
+      const row=sel.data||null, remote=(row&&row.state)||{};
+      this.remotePro=!!remote.pro;
+      /* 2 — settings & streak merge */
+      const localTs=Number(localStorage.ns_state_ts||0);
+      const remoteTs=row?Date.parse(row.updated_at):0;
+      if(mode==='full' && remote.ds_set && remoteTs>localTs){
+        Object.assign(S, remote.ds_set); localStorage.ds_set=JSON.stringify(S);
+        try{ bindSliders(); renderPresets(); renderTimers(); }catch(e){}
+      }
+      try{
+        const ls=JSON.parse(localStorage.ds_streak||'{}'), rs=remote.ds_streak||{};
+        if((rs.count||0)>(ls.count||0)){ localStorage.ds_streak=JSON.stringify(rs); renderStreak(); }
+      }catch(e){}
+      /* 3 — RESCUE SWEEP: upload every local recording not yet backed up */
+      let recs=await dbAll();
+      for(const r of recs){
+        if(r.cloud_id) continue;
+        const cid=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(Date.now().toString(36)+Math.random().toString(36).slice(2));
+        const up=await db.storage.from('recordings').upload(uid+'/'+cid+'.webm', r.blob,
+                  { upsert:true, contentType:r.mime||'audio/webm' });
+        if(up.error) continue;            /* will retry on the next sync pass */
+        r.cloud_id=cid; await dbPut(r);
+      }
+      /* 4 — download account recordings this device doesn't have */
+      recs=await dbAll();
+      const have=new Set(recs.map(r=>r.cloud_id).filter(Boolean));
+      const remoteRecs=Array.isArray(remote.recs)?remote.recs:[];
+      let gotNew=false;
+      for(const m of remoteRecs){
+        if(!m.cloud_id || have.has(m.cloud_id)) continue;
+        const dl=await db.storage.from('recordings').download(uid+'/'+m.cloud_id+'.webm');
+        if(dl.error||!dl.data) continue;
+        await dbAdd({ text:m.text||'(mantra)', cat:m.cat||'Custom', blob:dl.data,
+          mime:m.mime||'audio/webm', created:m.created||Date.now(), on:m.on!==false, cloud_id:m.cloud_id });
+        gotNew=true;
+      }
+      /* 5 — push the merged picture */
+      recs=await dbAll();
+      const state={
+        pro:this.remotePro,
+        ds_set:S,
+        ds_streak:JSON.parse(localStorage.ds_streak||'{}'),
+        recs:recs.filter(r=>r.cloud_id).map(r=>({ cloud_id:r.cloud_id, text:r.text, cat:r.cat,
+               mime:r.mime, created:r.created, on:!!r.on }))
+      };
+      const up2=await db.from('user_state').upsert({ user_id:uid, state:state, updated_at:new Date().toISOString() });
+      if(up2.error) throw up2.error;
+      localStorage.ns_state_ts=String(Date.now());
+      this.setStatus('synced');
+      if(gotNew){ await refreshRecs(); toast('Restored your mantras from your account ✓'); }
+    }catch(e){
+      this.setStatus(navigator.onLine?'error':'offline');
+    }
+    this._busy=false;
+    if(this._again){ this._again=false; this.schedulePush(); }
+  },
+  deleteCloud(rec){
+    if(!this.can()||!rec||!rec.cloud_id) return;
+    const uid=NS_AUTH.getUser().id;
+    try{ NS_AUTH.client.storage.from('recordings').remove([uid+'/'+rec.cloud_id+'.webm']); }catch(e){}
+  }
+};
+
+/* ----------  NS_BILLING — entitlement; real Stripe checkout lands next  ---------- */
+const NS_BILLING = {
+  isPro(){ try{ if(localStorage.ns_dev_pro==='1') return true; }catch(e){} return NS_SYNC.remotePro; },
+  checkout(){
+    const u=NS_AUTH.getUser();
+    if(!u){ closeUpgrade(); openSignin(); toast('Create a free account first — Pro attaches to your account'); return Promise.resolve({status:'needs-auth'}); }
+    toast('Pro purchases switch on very soon — hang tight.');
+    return Promise.resolve({status:'coming-soon'});
+  },
+  portal(){
+    if(!NS_AUTH.getUser()){ toast('Sign in to manage your subscription'); return Promise.resolve({status:'needs-auth'}); }
+    toast(this.isPro() ? 'Subscription management is coming online soon.' : 'No active subscription yet.');
+    return Promise.resolve({status:this.isPro()?'active':'none'});
+  }
+};
+
+/* ----------  PAYWALL / AUTH UI  ---------- */
+const UPGRADE_CTX = {
+  default:   'Unlock the full NightScript experience.',
+  mantra:    'This mantra is part of NightScript Pro — unlock all 50.',
+  preset:    'This brainwave program is part of NightScript Pro.',
+  timer:     'Longer & all-night sleep timers are a Pro feature.',
+  recording: 'Free includes 1 recording. Go Pro for unlimited.'
+};
+function openSignin(){ $('signinModal').classList.add('show'); }
+function closeSignin(){ $('signinModal').classList.remove('show'); }
+function renderSyncPill(){
+  const el=$('syncPill'); if(!el) return;
+  const map={ local:'Backed up to your account', syncing:'Backing up…', synced:'✓ Backed up to your account',
+              offline:'Offline — will back up when online', error:'Backup hiccup — retrying soon' };
+  el.textContent = NS_SYNC.can() ? (map[NS_SYNC.status]||'Backing up…') : 'Saved on this device';
+}
+function plainAuthError(err){
+  const m=((err&&err.message)||'').toLowerCase();
+  if(m.indexOf('rate')>-1) return 'Too many tries — wait a minute and try again';
+  if(m.indexOf('invalid login')>-1||m.indexOf('invalid credentials')>-1) return 'Wrong email or password — try again';
+  if(m.indexOf('already registered')>-1) return 'That email already has an account — use Sign in';
+  if(m.indexOf('password')>-1) return 'Password needs at least 8 characters';
+  if(m.indexOf('confirm')>-1) return 'Check your email and confirm your account first';
+  if(m.indexOf('network')>-1||m.indexOf('fetch')>-1) return 'No connection — check your internet and try again';
+  return 'That didn\'t work — please try again';
+}
+function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+async function nsEmail(){
+  const e=($('signinEmail').value||'').trim();
+  if(!validEmail(e)){ toast('Enter a valid email address'); return; }
+  if(!NS_AUTH.enabled()){ toast('Accounts come online with the next update — for now everything is saved on this device.'); return; }
+  try{
+    const res=await NS_AUTH.signInMagic(e); if(res.error) throw res.error;
+    $('signinMsg').innerHTML='<b style="color:var(--good)">✓ Link sent.</b> Open the email on THIS device and tap the link — you\'ll be signed in automatically.';
+    toast('Sign-in link sent — check your email ✓');
+  }catch(err){ toast(plainAuthError(err)); }
+}
+async function nsPassSignIn(){
+  const e=($('signinEmail').value||'').trim(), p=$('signinPass').value||'';
+  if(!validEmail(e)){ toast('Enter a valid email address'); return; }
+  if(!p){ toast('Type your password'); return; }
+  if(!NS_AUTH.enabled()){ toast('Accounts come online with the next update — for now everything is saved on this device.'); return; }
+  try{ const res=await NS_AUTH.signInPassword(e,p); if(res.error) throw res.error;
+    closeSignin(); toast('Signed in ✓');
+  }catch(err){ toast(plainAuthError(err)); }
+}
+async function nsPassSignUp(){
+  const e=($('signinEmail').value||'').trim(), p=$('signinPass').value||'';
+  if(!validEmail(e)){ toast('Enter a valid email address'); return; }
+  if((p||'').length<8){ toast('Choose a password with at least 8 characters'); return; }
+  if(!NS_AUTH.enabled()){ toast('Accounts come online with the next update — for now everything is saved on this device.'); return; }
+  try{ const res=await NS_AUTH.signUpPassword(e,p); if(res.error) throw res.error;
+    const needsConfirm = res.data && res.data.user && !res.data.session;
+    if(needsConfirm){ $('signinMsg').innerHTML='<b style="color:var(--good)">✓ Account created.</b> Check your email to confirm it, then come back and sign in.'; toast('Account created — check your email ✓'); }
+    else{ closeSignin(); toast('Account created ✓'); }
+  }catch(err){ toast(plainAuthError(err)); }
+}
+function onAcctClick(){ if(NS_AUTH.getUser()) openAccount(); else openSignin(); }
+function openAccount(){ renderAccountBody(); $('accountModal').classList.add('show'); }
+function closeAccount(){ $('accountModal').classList.remove('show'); }
+function nsSignOut(){ NS_AUTH.signOut().then(()=>{ closeAccount(); toast('Signed out'); }); }
+function openUpgrade(ctx){ const c=$('upgradeCtx'); if(c) c.textContent=UPGRADE_CTX[ctx]||UPGRADE_CTX.default; $('upgradeModal').classList.add('show'); }
+function closeUpgrade(){ $('upgradeModal').classList.remove('show'); }
+function nsCheckout(){ NS_BILLING.checkout(); }
+function nsPortal(){ NS_BILLING.portal(); }
+function openRecorderGuarded(text,cat){ if(!canAddRecording()){ openUpgrade('recording'); return; } openRecorder(text,cat); }
+function renderAccount(){ const b=$('acctBtn'); if(!b) return; const u=NS_AUTH.getUser();
+  if(!u){ b.textContent='Sign In'; return; }
+  const short=u.name||(u.email||'Account').split('@')[0];
+  b.innerHTML='👤 '+short+(NS_BILLING.isPro()?' <span class="pro">PRO</span>':''); }
+function renderAccountBody(){ const el=$('accountBody'); if(!el) return; const u=NS_AUTH.getUser(); if(!u){ el.innerHTML=''; return; }
+  const pro=NS_BILLING.isPro();
+  const backed=recsCache.filter(r=>r.cloud_id).length, total=recsCache.length;
+  const syncLine = total ? (backed+' of '+total+' recording'+(total>1?'s':'')+' backed up') : 'No recordings yet';
+  el.innerHTML=
+    '<div class="small"><b style="color:var(--txt)">'+(u.email||'(no email)')+'</b></div>'+
+    '<div class="card" style="margin:12px 0 8px"><b>Plan:</b> '+(pro?'NightScript <span style="color:var(--acc2)">Pro</span> — $9.99/mo':'Free')+'</div>'+
+    '<div class="card" style="margin:0 0 8px"><b>Backup:</b> '+syncLine+
+      '<div class="gap8" style="margin-top:8px;justify-content:flex-start"><button class="btn" onclick="NS_SYNC.syncAll(\'full\');closeAccount()">Back up now</button></div></div>'+
+    (pro ? '<button class="btn" style="width:100%" onclick="nsPortal()">Manage subscription</button>'
+         : '<button class="bigbtn" onclick="closeAccount();openUpgrade(\'default\')">Upgrade to Pro — $9.99/mo</button>')+
+    '<div class="gap8" style="margin-top:10px"><button class="btn danger" onclick="nsSignOut()">Sign out</button></div>'; }
+
+/* ----------  DEV: flip fake Pro (wired to 7 taps on the version string)  ---------- */
+function nsDevSetPro(v){ try{ if(v) localStorage.ns_dev_pro='1'; else localStorage.removeItem('ns_dev_pro'); }catch(e){}
+  toast('DEV · Pro '+(v?'ENABLED':'disabled')+' (this device only)'); NS_AUTH._emit(); }
+function nsDevTogglePro(){ nsDevSetPro(!NS_BILLING.isPro()); }
+
 /* ========================= STATE ========================= */
 let S = Object.assign({preset:'descent',timer:45,gap:4,voiceVol:90,beatVol:50,noise:true},
           JSON.parse(localStorage.ds_set||'{}'));
-function saveS(){localStorage.ds_set=JSON.stringify(S);}
+function saveS(){localStorage.ds_set=JSON.stringify(S); localStorage.ns_state_ts=String(Date.now()); NS_SYNC.schedulePush();}
 let recsCache = [];
 
 /* ========================= HELPERS ========================= */
@@ -376,20 +746,23 @@ function nav(k){
 function renderPresets(){
  const el=$('presetList'); el.innerHTML='';
  Object.entries(PRESETS).forEach(([k,p])=>{
+   const locked=isPresetLocked(k);                                   // v2: tier gate
    const d=document.createElement('div');
-   d.className='preset'+(S.preset===k?' on':'');
-   d.innerHTML=`<div><div class="pn">${p.name}</div><div class="pd">${p.desc}</div></div><div class="tick">✔</div>`;
-   d.onclick=()=>{S.preset=k; saveS(); renderPresets();};
+   d.className='preset'+(currentPreset()===k?' on':'')+(locked?' locked':'');
+   d.innerHTML=`<div><div class="pn">${p.name}</div><div class="pd">${p.desc}</div></div>`+
+     (locked?`<div class="lock">🔒 Pro</div>`:`<div class="tick">✔</div>`);
+   d.onclick=locked?(()=>openUpgrade('preset')):(()=>{S.preset=k; saveS(); renderPresets();});
    el.appendChild(d);
  });
 }
 function renderTimers(){
  const el=$('timerChips'); el.innerHTML='';
  TIMERS.forEach(t=>{
+   const locked=isTimerLocked(t);                                    // v2: tier gate
    const b=document.createElement('button');
-   b.className='chip'+((S.timer===t)?' on':'');
-   b.textContent=(t==='∞')?'All night':(t+' min');
-   b.onclick=()=>{S.timer=t; saveS(); renderTimers();};
+   b.className='chip'+((currentTimer()===t)?' on':'')+(locked?' locked':'');
+   b.innerHTML=((t==='∞')?'All night':(t+' min'))+(locked?' <span class="lockmini">🔒</span>':'');
+   b.onclick=locked?(()=>openUpgrade('timer')):(()=>{S.timer=t; saveS(); renderTimers();});
    el.appendChild(b);
  });
 }
@@ -426,12 +799,18 @@ function renderCats(){
 function renderMantras(){
  const el=$('mantraList'); el.innerHTML='';
  MANTRAS.filter(m=>catFilter==='All'||m[0]===catFilter).forEach(m=>{
+   const locked=isMantraLocked(m[1]);                                // v2: tier gate
    const done=recsCache.some(r=>r.text===m[1]);
-   const d=document.createElement('div'); d.className='mrow';
-   d.innerHTML=`<div class="mt"><span class="cat">${m[0]}</span>${m[1]}</div>`+
-     (done?`<span class="done">✓ recorded</span>`:``)+
-     `<button class="btn ${done?'':'acc'}">🎙️ ${done?'Again':'Record'}</button>`;
-   d.querySelector('button').onclick=()=>openRecorder(m[1],m[0]);
+   const d=document.createElement('div'); d.className='mrow'+(locked?' locked':'');
+   if(locked){
+     d.innerHTML=`<div class="mt"><span class="cat">${m[0]}</span>${m[1]}</div><span class="lock">🔒 Pro</span>`;
+     d.onclick=()=>openUpgrade('mantra');
+   }else{
+     d.innerHTML=`<div class="mt"><span class="cat">${m[0]}</span>${m[1]}</div>`+
+       (done?`<span class="done">✓ recorded</span>`:``)+
+       `<button class="btn ${done?'':'acc'}">🎙️ ${done?'Again':'Record'}</button>`;
+     d.querySelector('button').onclick=()=>openRecorderGuarded(m[1],m[0]);
+   }
    el.appendChild(d);
  });
 }
@@ -440,8 +819,11 @@ function renderMantras(){
 function renderVoice(){
  const el=$('voiceList');
  $('recCount').textContent=recsCache.length?`(${recsCache.length})`:'';
- if(!recsCache.length){el.innerHTML='<div class="note">Nothing recorded yet — grab one from the Library.</div>';return;}
- el.innerHTML='';
+ const capNote = NS_BILLING.isPro() ? '' :
+   `<div class="small" style="margin-bottom:10px">Free plan: <b>${NS_TIERS.free.maxRecordings} recording</b>. `+
+   `<button class="linkbtn" style="padding:0;font-size:12px" onclick="openUpgrade('recording')">Upgrade for unlimited →</button></div>`;
+ if(!recsCache.length){el.innerHTML=capNote+'<div class="note">Nothing recorded yet — grab one from the Library.</div>';return;}
+ el.innerHTML=capNote;
  recsCache.slice().sort((a,b)=>b.created-a.created).forEach(r=>{
    const d=document.createElement('div'); d.className='vrow';
    const date=new Date(r.created).toLocaleDateString();
@@ -450,9 +832,9 @@ function renderVoice(){
      `<button class="iconbtn" title="Play">▶️</button><button class="iconbtn" title="Delete">🗑️</button>`;
    const [chk]=d.querySelectorAll('input');
    const [play,del]=d.querySelectorAll('.iconbtn');
-   chk.onchange=async()=>{r.on=chk.checked; await dbPut(r); renderLoopSummary();};
+   chk.onchange=async()=>{r.on=chk.checked; await dbPut(r); renderLoopSummary(); NS_SYNC.schedulePush();};
    play.onclick=()=>{const a=$('voicePlayer'); a.src=URL.createObjectURL(r.blob); a.volume=1; a.play();};
-   del.onclick=async()=>{if(confirm('Delete this recording?')){await dbDel(r.id); refreshRecs();}};
+   del.onclick=async()=>{if(confirm('Delete this recording?')){NS_SYNC.deleteCloud(r); await dbDel(r.id); refreshRecs(); NS_SYNC.schedulePush();}};
    el.appendChild(d);
  });
 }
@@ -477,6 +859,7 @@ function openRecorder(text,cat){
 function recordCustom(){
  const t=$('customText').value.trim();
  if(!t){toast('Type your mantra first');return;}
+ if(!canAddRecording()){ openUpgrade('recording'); return; }              // v2: recording cap
  openRecorder(t,'Custom');
 }
 async function toggleRec(){
@@ -503,7 +886,9 @@ async function toggleRec(){
 }
 async function saveRec(){
  if(!recBlob||!recTarget)return;
+ if(!canAddRecording()){ closeRec(); openUpgrade('recording'); return; }  // v2: recording cap (defense-in-depth)
  await dbAdd({text:recTarget.text,cat:recTarget.cat,blob:recBlob,mime:recMime,created:Date.now(),on:true});
+ NS_SYNC.schedulePush();
  closeRec();
  if(recTarget.cat==='Custom')$('customText').value='';
  toast('Saved — it will play in tonight\'s loop ✓');
@@ -533,7 +918,9 @@ async function beginSession(){
  const panR=ctx.createStereoPanner(); panR.pan.value= 1; panR.connect(eng.beatGain);
  eng.oscL=ctx.createOscillator(); eng.oscL.type='sine'; eng.oscL.frequency.value=200; eng.oscL.connect(panL);
  eng.oscR=ctx.createOscillator(); eng.oscR.type='sine'; eng.oscR.connect(panR);
- const sched=PRESETS[S.preset].sched;
+ const presetKey=currentPreset();          // v2: clamp a locked preset to a free one
+ const T=currentTimer();                    // v2: clamp sleep timer to the tier cap
+ const sched=PRESETS[presetKey].sched;
  eng.oscR.frequency.setValueAtTime(200+sched[0][1],t0);
  for(let i=1;i<sched.length;i++) eng.oscR.frequency.linearRampToValueAtTime(200+sched[i][1], t0+sched[i][0]);
  eng.oscL.start(); eng.oscR.start();
@@ -549,7 +936,7 @@ async function beginSession(){
  eng.noiseSrc.connect(eng.noiseGain); eng.noiseSrc.start();
  // --- state & UI ---
  eng.running=true; eng.fading=false; eng.playlist=on; eng.idx=0; eng.start=Date.now();
- $('sesInfo').textContent=PRESETS[S.preset].name+'  ·  '+on.length+' mantra'+(on.length>1?'s':'')+'  ·  '+(S.timer==='∞'?'all night':S.timer+' min');
+ $('sesInfo').textContent=PRESETS[presetKey].name+'  ·  '+on.length+' mantra'+(on.length>1?'s':'')+'  ·  '+(T==='∞'?'all night':T+' min');
  $('sesVoice').value=S.voiceVol; $('sesBeat').value=S.beatVol;
  $('sesVoice').oninput=e=>{S.voiceVol=+e.target.value;saveS();$('voicePlayer').volume=S.voiceVol/100;};
  $('sesBeat').oninput=e=>{S.beatVol=+e.target.value;saveS(); if(eng.beatGain)eng.beatGain.gain.value=beatGainVal();};
@@ -558,8 +945,8 @@ async function beginSession(){
  if(navigator.wakeLock){ try{eng.wl=await navigator.wakeLock.request('screen');}catch(e){} }
  markStreak();
  // --- timers ---
- if(S.timer!=='∞'){
-   const total=S.timer*60*1000;
+ if(T!=='∞'){
+   const total=T*60*1000;
    eng.timers.push(setTimeout(()=>fadeOut(60), Math.max(total-60000,5000)));
    eng.timers.push(setTimeout(()=>endSession(true), total+2000));
  }
@@ -611,6 +998,7 @@ function markStreak(){
  const y=new Date(Date.now()-864e5).toDateString();
  st.count=(st.last===y)?(st.count||0)+1:1; st.last=today;
  localStorage.ds_streak=JSON.stringify(st); renderStreak();
+ localStorage.ns_state_ts=String(Date.now()); NS_SYNC.schedulePush();
 }
 function renderStreak(){
  const st=JSON.parse(localStorage.ds_streak||'{}');
@@ -621,8 +1009,26 @@ function renderStreak(){
 function closeWelcome(){localStorage.ds_welcome='1';$('welcome').classList.remove('show');}
 
 /* ========================= INIT ========================= */
+NS_AUTH.init();
+renderAccount(); renderSyncPill();
 renderPresets(); renderTimers(); bindSliders(); renderCats(); renderStreak();
 refreshRecs();
+window.addEventListener('online',()=>{ if(NS_SYNC.can()) NS_SYNC.syncAll('push'); });
+window.addEventListener('offline',()=>{ if(NS_SYNC.can()) NS_SYNC.setStatus('offline'); });
+
+/* v2: re-render every tier-gated surface whenever auth/entitlement changes */
+NS_AUTH.onAuthChange(()=>{
+  renderAccount(); renderSyncPill(); renderPresets(); renderTimers(); renderMantras(); renderVoice(); renderLoopSummary();
+});
+
+/* v2: expose interfaces for testing / console */
+window.NS_TIERS=NS_TIERS; window.NS_AUTH=NS_AUTH; window.NS_BILLING=NS_BILLING; window.NS_SYNC=NS_SYNC; window.NS_CONFIG=NS_CONFIG;
+
+/* v2: hidden dev toggle — 7 taps on the version string flips fake Pro */
+(function(){ const v=$('verString'); if(!v) return; let n=0,tmr=null;
+  v.addEventListener('click',()=>{ n++; clearTimeout(tmr); tmr=setTimeout(()=>{n=0;},1500);
+    if(n>=7){ n=0; nsDevTogglePro(); } }); })();
+
 if(!localStorage.ds_welcome)$('welcome').classList.add('show');
 /* ========================= PWA ========================= */
 if('serviceWorker' in navigator && location.protocol==='https:'){
