@@ -600,19 +600,55 @@ const NS_SYNC = {
   }
 };
 
-/* ----------  NS_BILLING — entitlement; real Stripe checkout lands next  ---------- */
+/* ----------  NS_BILLING — real Stripe checkout via hosted Payment Link  ----------
+   LIVE since 2026-10-11. The Upgrade button opens the Stripe-hosted checkout for the
+   $9.99/mo NightScript Pro price (prod_VQEhzraTXc4Mu1 / price_1UPOEQAJBOn12azlNwdst06D).
+   We pass client_reference_id=<supabase user id> so the Stripe webhook (Supabase edge
+   function 'stripe-webhook') can flip user_state.state.pro=true for the exact account,
+   and prefilled_email so the receipt + account match. After the webhook flips pro,
+   NS_SYNC picks it up (the post-payment redirect comes back with ?ns_pro=1 which forces
+   an immediate re-sync, so Pro usually lights up within a few seconds). */
 const NS_BILLING = {
+  PAYMENT_LINK: 'https://buy.stripe.com/6oU14m4QwfsMaQFfzyejK00',
   isPro(){ try{ if(localStorage.ns_dev_pro==='1') return true; }catch(e){} return NS_SYNC.remotePro; },
   checkout(){
     const u=NS_AUTH.getUser();
     if(!u){ closeUpgrade(); openSignin(); toast('Create a free account first — Pro attaches to your account'); return Promise.resolve({status:'needs-auth'}); }
-    toast('Pro purchases switch on very soon — hang tight.');
-    return Promise.resolve({status:'coming-soon'});
+    let url = this.PAYMENT_LINK + '?client_reference_id=' + encodeURIComponent(u.id);
+    if(u.email){ url += '&prefilled_email=' + encodeURIComponent(u.email); }
+    try{ localStorage.ns_pro_pending='1'; }catch(e){}
+    closeUpgrade();
+    toast('Opening secure checkout…');
+    try{ window.location.assign(url); }catch(e){ window.open(url,'_blank'); }
+    return Promise.resolve({status:'redirecting'});
   },
   portal(){
     if(!NS_AUTH.getUser()){ toast('Sign in to manage your subscription'); return Promise.resolve({status:'needs-auth'}); }
-    toast(this.isPro() ? 'Subscription management is coming online soon.' : 'No active subscription yet.');
-    return Promise.resolve({status:this.isPro()?'active':'none'});
+    if(this.isPro()){ toast('To manage or cancel, reply to your NightScript receipt email or contact support@nightscript.app.'); return Promise.resolve({status:'active'}); }
+    toast('No active subscription yet.'); return Promise.resolve({status:'none'});
+  },
+  /* Called on load: if we just came back from checkout, nudge a re-sync so Pro
+     lights up as soon as the webhook has processed (poll a few times, backing off). */
+  handleReturn(){
+    let pending=false;
+    try{ pending = (localStorage.ns_pro_pending==='1'); }catch(e){}
+    const qp = new URLSearchParams(location.search||'');
+    const returned = qp.has('ns_pro') || qp.get('ns_pro')==='1';
+    if(!pending && !returned) return;
+    try{ localStorage.removeItem('ns_pro_pending'); }catch(e){}
+    if(returned){
+      try{ const url=new URL(location.href); url.searchParams.delete('ns_pro'); history.replaceState({},'',url.pathname+url.search+url.hash); }catch(e){}
+    }
+    toast('Thanks! Activating your Pro — one moment…');
+    let tries=0;
+    const poll=()=>{
+      tries++;
+      if(NS_BILLING.isPro()){ try{renderAll();}catch(e){} toast('✓ NightScript Pro is active. Enjoy.'); return; }
+      if(tries>=6){ toast('Payment received — Pro will switch on shortly. Pull to refresh if needed.'); return; }
+      try{ NS_SYNC.syncAll('full'); }catch(e){}
+      setTimeout(poll, tries*2500);
+    };
+    setTimeout(poll, 1500);
   }
 };
 
@@ -1023,10 +1059,23 @@ function renderStreak(){
 function closeWelcome(){localStorage.ds_welcome='1';$('welcome').classList.remove('show');}
 
 /* ========================= INIT ========================= */
+/* v2: one call that refreshes every tier-gated + account surface (used after Pro flips) */
+function renderAll(){
+  try{ renderAccount(); }catch(e){}
+  try{ renderSyncPill(); }catch(e){}
+  try{ renderPresets(); }catch(e){}
+  try{ renderTimers(); }catch(e){}
+  try{ renderCats(); }catch(e){}
+  try{ renderMantras(); }catch(e){}
+  try{ renderVoice(); }catch(e){}
+  try{ renderLoopSummary(); }catch(e){}
+  try{ renderStreak(); }catch(e){}
+}
 NS_AUTH.init();
 renderAccount(); renderSyncPill();
 renderPresets(); renderTimers(); bindSliders(); renderCats(); renderStreak();
 refreshRecs();
+try{ NS_BILLING.handleReturn(); }catch(e){}
 window.addEventListener('online',()=>{ if(NS_SYNC.can()) NS_SYNC.syncAll('push'); });
 window.addEventListener('offline',()=>{ if(NS_SYNC.can()) NS_SYNC.setStatus('offline'); });
 
