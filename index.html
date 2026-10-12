@@ -525,8 +525,10 @@ const NS_SYNC = {
   setStatus(s){ this.status=s; try{ renderSyncPill(); }catch(e){} },
   schedulePush(){ if(!this.can()) return; clearTimeout(this._t);
     this._t=setTimeout(()=>{ this.syncAll('push'); }, 2000); },
-  onSignedIn(){ this.syncAll('full'); },
-  onSignedOut(){ this.remotePro=false; this.setStatus('local'); },
+  onSignedIn(){ this.adoptGuest().then(()=>this.syncAll('full'), ()=>this.syncAll('full')); },
+  async adoptGuest(){ try{ const u=NS_AUTH.getUser(); if(!u||!u.id) return; const uid=u.id;
+    const all=await dbAllRaw(); for(const r of all){ if(r.owner==='guest'){ r.owner=uid; await dbPut(r); } } }catch(e){} },
+  onSignedOut(){ this.remotePro=false; this.setStatus('local'); try{ refreshRecs(); }catch(e){} },
   async syncAll(mode){
     if(!this.can()){ this.setStatus('local'); return; }
     if(this._busy){ this._again=true; return; }
@@ -750,7 +752,21 @@ function renderAccountBody(){ const el=$('accountBody'); if(!el) return; const u
       '<div class="gap8" style="margin-top:8px;justify-content:flex-start"><button class="btn" onclick="NS_SYNC.syncAll(\'full\');closeAccount()">Back up now</button></div></div>'+
     (pro ? '<button class="btn" style="width:100%" onclick="nsPortal()">Manage subscription</button>'
          : '<button class="bigbtn" onclick="closeAccount();openUpgrade(\'default\')">Upgrade to Pro — $9.99/mo</button>')+
+    (nsLegacyN ? '<div class="card" style="margin:10px 0 8px"><b>Older recordings on this device:</b> '+nsLegacyN+'<div class="small" style="margin-top:4px">Made before you had an account, not tied to any login yet.</div><div class="gap8" style="margin-top:8px;justify-content:flex-start"><button class="btn" onclick="nsRecoverLegacy()">Add them to this account</button></div></div>' : '')+
     '<div class="gap8" style="margin-top:10px"><button class="btn danger" onclick="nsSignOut()">Sign out</button></div>'; }
+async function nsRecoverLegacy(){
+  const u=NS_AUTH.getUser(); if(!u||!u.id){ toast('Sign in first'); return; }
+  const uid=u.id, all=await dbAllRaw();
+  const mine=new Set(all.filter(r=>r.owner===uid && r.cloud_id).map(r=>r.cloud_id));
+  let n=0;
+  for(const r of all){ if(r.owner==='__legacy__' || r.owner===undefined){
+    if(r.cloud_id && mine.has(r.cloud_id)){ await dbDel(r.id); continue; }
+    r.owner=uid; await dbPut(r); n++; } }
+  try{ nsLegacyN=await nsLegacyCount(); }catch(e){}
+  if(n){ toast(n+' recording'+(n>1?'s':'')+' added to your account ✓'); await refreshRecs(); NS_SYNC.schedulePush(); }
+  else { toast('Those are already in your account'); }
+  try{ renderAccountBody(); }catch(e){}
+}
 
 /* ----------  DEV: flip fake Pro (wired to 7 taps on the version string)  ---------- */
 function nsDevSetPro(v){ try{ if(v) localStorage.ns_dev_pro='1'; else localStorage.removeItem('ns_dev_pro'); }catch(e){}
@@ -762,6 +778,7 @@ let S = Object.assign({preset:'descent',timer:45,gap:4,voiceVol:90,beatVol:50,no
           JSON.parse(localStorage.ds_set||'{}'));
 function saveS(){localStorage.ds_set=JSON.stringify(S); localStorage.ns_state_ts=String(Date.now()); NS_SYNC.schedulePush();}
 let recsCache = [];
+let nsLegacyN = 0;   // count of pre-account recordings stranded on this device
 
 /* ========================= HELPERS ========================= */
 const $ = id => document.getElementById(id);
@@ -770,18 +787,33 @@ function toast(msg,ms){ const t=$('toast'); t.textContent=msg; t.style.display='
 function fmt(sec){const m=Math.floor(sec/60),s=Math.floor(sec%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
 
 /* ========================= INDEXEDDB ========================= */
+/* v2.1 (2026-10-12) ACCOUNT ISOLATION: every recording carries an `owner` =
+   the Supabase user id that recorded it, or 'guest' when signed out. The device
+   database is shared, but each signed-in account only ever sees and backs up its
+   OWN recordings. Fixes the bug where a new account showed the first account's mantras. */
+function nsOwner(){ try{ const u=NS_AUTH.getUser(); return (u&&u.id)?u.id:'guest'; }catch(e){ return 'guest'; } }
 function dbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('nightscript',1);
  r.onupgradeneeded=e=>{e.target.result.createObjectStore('recs',{keyPath:'id',autoIncrement:true});};
  r.onsuccess=e=>res(e.target.result); r.onerror=()=>rej(r.error);});}
-async function dbAll(){const d=await dbOpen();return new Promise(res=>{
+async function dbAllRaw(){const d=await dbOpen();return new Promise(res=>{
  const q=d.transaction('recs').objectStore('recs').getAll(); q.onsuccess=()=>res(q.result||[]);});}
-async function dbAdd(rec){const d=await dbOpen();return new Promise(res=>{
+async function dbAll(){const all=await dbAllRaw(); const me=nsOwner();
+ if(me==='guest') return all.filter(r=> r.owner==='guest' || r.owner==='__legacy__' || r.owner===undefined );
+ return all.filter(r=> r.owner===me );}
+async function dbAdd(rec){ if(rec && rec.owner===undefined) rec.owner=nsOwner();
+ const d=await dbOpen();return new Promise(res=>{
  const q=d.transaction('recs','readwrite').objectStore('recs').add(rec); q.onsuccess=()=>res(q.result);});}
 async function dbPut(rec){const d=await dbOpen();return new Promise(res=>{
  const q=d.transaction('recs','readwrite').objectStore('recs').put(rec); q.onsuccess=()=>res();});}
 async function dbDel(id){const d=await dbOpen();return new Promise(res=>{
  const q=d.transaction('recs','readwrite').objectStore('recs').delete(id); q.onsuccess=()=>res();});}
-async function refreshRecs(){recsCache=await dbAll(); renderVoice(); renderLoopSummary(); renderMantras();}
+/* one-time: tag pre-update recordings as 'legacy' so they belong to no account
+   automatically; the signed-in user can reclaim them from the Account panel. */
+async function nsMigrateLegacy(){ try{ if(localStorage.ns_owner_migrated==='1') return;
+ const all=await dbAllRaw(); for(const r of all){ if(r.owner===undefined){ r.owner='__legacy__'; await dbPut(r); } }
+ localStorage.ns_owner_migrated='1'; }catch(e){} }
+async function nsLegacyCount(){ try{ const all=await dbAllRaw(); return all.filter(r=> r.owner==='__legacy__' || r.owner===undefined ).length; }catch(e){ return 0; } }
+async function refreshRecs(){recsCache=await dbAll(); try{ nsLegacyN=await nsLegacyCount(); }catch(e){} renderVoice(); renderLoopSummary(); renderMantras();}
 
 /* ========================= NAV ========================= */
 function nav(k){
@@ -1074,14 +1106,14 @@ function renderAll(){
 NS_AUTH.init();
 renderAccount(); renderSyncPill();
 renderPresets(); renderTimers(); bindSliders(); renderCats(); renderStreak();
-refreshRecs();
+nsMigrateLegacy().then(refreshRecs, refreshRecs);
 try{ NS_BILLING.handleReturn(); }catch(e){}
 window.addEventListener('online',()=>{ if(NS_SYNC.can()) NS_SYNC.syncAll('push'); });
 window.addEventListener('offline',()=>{ if(NS_SYNC.can()) NS_SYNC.setStatus('offline'); });
 
 /* v2: re-render every tier-gated surface whenever auth/entitlement changes */
 NS_AUTH.onAuthChange(()=>{
-  renderAccount(); renderSyncPill(); renderPresets(); renderTimers(); renderMantras(); renderVoice(); renderLoopSummary();
+  renderAccount(); renderSyncPill(); renderPresets(); renderTimers(); refreshRecs();
 });
 
 /* v2: expose interfaces for testing / console */
