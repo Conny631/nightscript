@@ -144,6 +144,16 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
   background:conic-gradient(from -45deg,#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0 100%);color:#fff;font-weight:800;font-size:12px}
 .divider{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12px;margin:14px 0}
 .divider::before,.divider::after{content:'';flex:1;border-top:1px solid var(--line)}
+/* v2.1 — sign-in gate: app content is private until the user has an account */
+#authGate{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+  padding:28px 22px;background:radial-gradient(ellipse at 50% 0,#1b1442 0,var(--bg) 62%);overflow:auto}
+#authGate.show{display:flex}
+#authGate .gatecard{max-width:430px;width:100%;text-align:center;margin:auto}
+#authGate .gate-tag{color:var(--dim);margin:6px 0 20px}
+#authGate .gatepitch{color:var(--txt);font-size:15px;line-height:1.55;margin-bottom:20px}
+#authGate .gatefeat{list-style:none;padding:0;margin:0 0 24px;text-align:left;display:inline-block}
+#authGate .gatefeat li{color:var(--txt);font-size:14px;padding:9px 2px;border-bottom:1px solid var(--line)}
+#authGate .gatefeat li:last-child{border-bottom:none}
 </style>
 <script src="vendor/supabase.js"></script>
 <script>if(!window.supabase)document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/@supabase\/supabase-js@2"><\/script>');</script>
@@ -241,9 +251,26 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
       <div class="small">Without an account, everything stays on this device only. When you create a free account, your recordings and settings are backed up privately to your account so you can restore them on any phone or computer. Your recordings are never shared, never analyzed, never used for anything but playing them back to you. No tracking, no ads.</div>
       <h4 class="sec">Coming Soon</h4>
       <div class="small">• <b>Voice cloning</b> — record 60 seconds once, and every mantra in the library is generated in your voice automatically.<br>• Native iPhone/Android apps with screen-off all-night playback.<br>• Progress journal and dream log.</div>
-      <div class="small" style="margin-top:14px;opacity:.6;cursor:default" id="verString">NightScript v2 prototype · build 2026.10.09</div>
+      <div class="small" style="margin-top:14px;opacity:.6;cursor:default" id="verString">NightScript v2 prototype · build 2026.10.13</div>
     </div>
   </section>
+</div>
+
+<!-- Auth gate (v2.1) — app content stays private until the user has an account -->
+<div id="authGate" hidden>
+  <div class="gatecard">
+    <div class="logo" style="font-size:30px">🌙 Night<span>Script</span></div>
+    <div class="gate-tag">Speak it. Sleep on it. Become it.</div>
+    <div class="gatepitch">Record affirmations <b>in your own voice</b> and fall asleep to them under theta binaural beats — planting them in your subconscious in the minutes that matter most.</div>
+    <ul class="gatefeat">
+      <li>🎙️ A 50-mantra library, recorded in your own voice</li>
+      <li>🌙 Theta sleep programs &amp; a morning primer</li>
+      <li>☁️ Your recordings backed up &amp; on every device</li>
+    </ul>
+    <button class="bigbtn" onclick="gateCreate()">Create your free account</button>
+    <div class="center" style="margin-top:12px"><button class="linkbtn" onclick="gateSignin()">I already have an account — sign in</button></div>
+    <div class="small center" style="margin-top:18px;opacity:.65">Free to start. Your voice stays private — never shared, never analyzed.</div>
+  </div>
 </div>
 
 <!-- Bottom nav -->
@@ -670,6 +697,12 @@ function nsToggleAuthMode(){ setAuthMode(AUTH_MODE==='signup'?'signin':'signup')
 function nsAuthPrimary(){ return AUTH_MODE==='signup' ? nsPassSignUp() : nsPassSignIn(); }
 function openSignin(){ let m='signup'; try{ if(localStorage.ns_auth_mode==='signin') m='signin'; }catch(e){} setAuthMode(m); $('signinModal').classList.add('show'); }
 function closeSignin(){ $('signinModal').classList.remove('show'); }
+/* v2.1 — sign-in gate. Fail-open: if accounts aren't live (no client), never lock anyone out. */
+function applyAuthGate(){ const g=$('authGate'); if(!g) return;
+  const locked = NS_AUTH.enabled() && !NS_AUTH.getUser();
+  g.classList.toggle('show', locked); g.hidden = !locked; }
+function gateCreate(){ try{ localStorage.ns_auth_mode='signup'; }catch(e){} openSignin(); }
+function gateSignin(){ try{ localStorage.ns_auth_mode='signin'; }catch(e){} openSignin(); }
 function renderSyncPill(){
   const el=$('syncPill'); if(!el) return;
   const map={ local:'Backed up to your account', syncing:'Backing up…', synced:'✓ Backed up to your account',
@@ -1104,6 +1137,7 @@ function renderAll(){
   try{ renderStreak(); }catch(e){}
 }
 NS_AUTH.init();
+applyAuthGate();
 renderAccount(); renderSyncPill();
 renderPresets(); renderTimers(); bindSliders(); renderCats(); renderStreak();
 nsMigrateLegacy().then(refreshRecs, refreshRecs);
@@ -1114,6 +1148,8 @@ window.addEventListener('offline',()=>{ if(NS_SYNC.can()) NS_SYNC.setStatus('off
 /* v2: re-render every tier-gated surface whenever auth/entitlement changes */
 NS_AUTH.onAuthChange(()=>{
   renderAccount(); renderSyncPill(); renderPresets(); renderTimers(); refreshRecs();
+  applyAuthGate();
+  try{ if(NS_AUTH.getUser() && !localStorage.ds_welcome) $('welcome').classList.add('show'); }catch(e){}
 });
 
 /* v2: expose interfaces for testing / console */
@@ -1124,7 +1160,7 @@ window.NS_TIERS=NS_TIERS; window.NS_AUTH=NS_AUTH; window.NS_BILLING=NS_BILLING; 
   v.addEventListener('click',()=>{ n++; clearTimeout(tmr); tmr=setTimeout(()=>{n=0;},1500);
     if(n>=7){ n=0; nsDevTogglePro(); } }); })();
 
-if(!localStorage.ds_welcome)$('welcome').classList.add('show');
+if(!localStorage.ds_welcome && !(NS_AUTH.enabled() && !NS_AUTH.getUser()))$('welcome').classList.add('show');
 /* ========================= PWA ========================= */
 if('serviceWorker' in navigator && location.protocol==='https:'){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
