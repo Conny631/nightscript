@@ -146,8 +146,12 @@ h4.sec{font-size:13px;color:var(--acc2);margin:14px 0 6px;text-transform:upperca
 .divider::before,.divider::after{content:'';flex:1;border-top:1px solid var(--line)}
 /* v2.1 — sign-in gate: app content is private until the user has an account */
 #authGate{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
-  padding:28px 22px;background:radial-gradient(ellipse at 50% 0,#1b1442 0,var(--bg) 62%);overflow:auto}
+  padding:28px 22px;overflow:auto;background:
+    radial-gradient(1100px 700px at 85% -10%, #2a1b4d 0%, transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, #11244d 0%, transparent 55%),
+    linear-gradient(180deg,var(--bg1),var(--bg2))}
 #authGate.show{display:flex}
+body.gated .app, body.gated nav{display:none!important}
 #authGate .gatecard{max-width:430px;width:100%;text-align:center;margin:auto}
 #authGate .gate-tag{color:var(--dim);margin:6px 0 20px}
 #authGate .gatepitch{color:var(--txt);font-size:15px;line-height:1.55;margin-bottom:20px}
@@ -700,7 +704,8 @@ function closeSignin(){ $('signinModal').classList.remove('show'); }
 /* v2.1 — sign-in gate. Fail-open: if accounts aren't live (no client), never lock anyone out. */
 function applyAuthGate(){ const g=$('authGate'); if(!g) return;
   const locked = NS_AUTH.enabled() && !NS_AUTH.getUser();
-  g.classList.toggle('show', locked); g.hidden = !locked; }
+  g.classList.toggle('show', locked); g.hidden = !locked;
+  try{ document.body.classList.toggle('gated', locked); }catch(e){} }
 function gateCreate(){ try{ localStorage.ns_auth_mode='signup'; }catch(e){} openSignin(); }
 function gateSignin(){ try{ localStorage.ns_auth_mode='signin'; }catch(e){} openSignin(); }
 function renderSyncPill(){
