@@ -158,6 +158,38 @@ body.gated .app, body.gated nav{display:none!important}
 #authGate .gatefeat{list-style:none;padding:0;margin:0 0 24px;text-align:left;display:inline-block}
 #authGate .gatefeat li{color:var(--txt);font-size:14px;padding:9px 2px;border-bottom:1px solid var(--line)}
 #authGate .gatefeat li:last-child{border-bottom:none}
+/* ===== Shop (v2.2) — physical products ===== */
+.shopintro{font-size:13px;color:var(--dim);line-height:1.5}
+.previewbar{display:flex;gap:9px;align-items:flex-start;background:rgba(251,191,36,.1);
+  border:1px solid rgba(251,191,36,.38);border-radius:14px;padding:11px 13px;font-size:12.5px;
+  margin-bottom:14px;line-height:1.45;color:#fde68a}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:14px;cursor:pointer;transition:.15s}
+.pcard:active{transform:scale(.99)}
+.pthumb{position:relative;width:100%;height:188px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(140px 140px at 50% 40%, rgba(196,181,253,.33), transparent 70%),linear-gradient(135deg,#241a44,#15213f);font-size:64px}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pthumb .samp{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--dim);
+  background:rgba(0,0,0,.4);padding:3px 9px;border-radius:999px;letter-spacing:.3px}
+.pbadge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;letter-spacing:.5px;
+  color:#120a24;background:linear-gradient(135deg,#c4b5fd,#8b5cf6);padding:3px 9px;border-radius:999px}
+.pbody{padding:14px 16px}
+.pbody .pn{font-size:16px;font-weight:700}
+.pbody .pt{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.45}
+.pricerow{display:flex;align-items:center;gap:10px;margin-top:13px}
+.pprice{font-size:21px;font-weight:800;color:var(--acc2)}
+.pcompare{font-size:13px;color:var(--dim);text-decoration:line-through}
+.pbuy{margin-left:auto;padding:10px 20px;border-radius:12px;border:none;font-weight:700;font-size:14px;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer}
+.poos{margin-left:auto;font-size:12px;color:var(--dim)}
+.pdetail-thumb{position:relative;width:100%;height:230px;border-radius:14px;overflow:hidden;margin:4px 0 14px;
+  display:flex;align-items:center;justify-content:center;font-size:76px;
+  background:radial-gradient(160px 160px at 50% 40%, rgba(196,181,253,.33), transparent 70%),linear-gradient(135deg,#241a44,#15213f)}
+.pdetail-thumb img{width:100%;height:100%;object-fit:cover}
+.pdetail-thumb .samp{position:absolute;bottom:9px;right:11px;font-size:10px;color:var(--dim);background:rgba(0,0,0,.4);padding:3px 9px;border-radius:999px}
+.qtyrow{display:flex;align-items:center;gap:16px;justify-content:center;margin:16px 0}
+.qtyrow button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font-size:22px;cursor:pointer}
+.qtyrow .qn{font-size:18px;font-weight:700;min-width:26px;text-align:center}
+ul.feat.pfeat li::before{content:'\2713';color:var(--good)}
 </style>
 <script src="vendor/supabase.js"></script>
 <script>if(!window.supabase)document.write('<script src="https:\/\/cdn.jsdelivr.net\/npm\/@supabase\/supabase-js@2"><\/script>');</script>
@@ -258,6 +290,19 @@ body.gated .app, body.gated nav{display:none!important}
       <div class="small" style="margin-top:14px;opacity:.6;cursor:default" id="verString">NightScript v2 prototype · build 2026.10.13</div>
     </div>
   </section>
+
+  <!-- ============ SHOP ============ -->
+  <section id="scr-shop" hidden>
+    <div id="shopPreviewBar"></div>
+    <div class="card">
+      <h3>NightScript Shop</h3>
+      <div class="shopintro">Gear that makes your nights work better — starting with headphones built for sleeping.</div>
+    </div>
+    <div id="shopGrid"></div>
+    <div class="card" style="text-align:center">
+      <div class="small">Every order ships from us · Secure card checkout · Questions? <b>support@nightscript.app</b></div>
+    </div>
+  </section>
 </div>
 
 <!-- Auth gate (v2.1) — app content stays private until the user has an account -->
@@ -282,6 +327,7 @@ body.gated .app, body.gated nav{display:none!important}
   <button id="nav-tonight" class="on" onclick="nav('tonight')"><span class="ic">🌙</span>Tonight</button>
   <button id="nav-library" onclick="nav('library')"><span class="ic">📖</span>Library</button>
   <button id="nav-voice" onclick="nav('voice')"><span class="ic">🎙️</span>My Voice</button>
+  <button id="nav-shop" onclick="nav('shop')" style="display:none"><span class="ic">🛍️</span>Shop</button>
   <button id="nav-about" onclick="nav('about')"><span class="ic">✨</span>About</button>
 </nav>
 
@@ -372,6 +418,14 @@ body.gated .app, body.gated nav{display:none!important}
     <h2>Your account</h2>
     <div id="accountBody"></div>
     <div class="gap8" style="margin-top:12px"><button class="btn" onclick="closeAccount()">Close</button></div>
+  </div>
+</div>
+
+<!-- Product detail / checkout sheet (Shop) -->
+<div class="modal" id="productModal">
+  <div class="sheet">
+    <div id="productBody"></div>
+    <div class="gap8" style="margin-top:12px"><button class="btn" onclick="closeProduct()">Close</button></div>
   </div>
 </div>
 
@@ -855,7 +909,7 @@ async function refreshRecs(){recsCache=await dbAll(); try{ nsLegacyN=await nsLeg
 
 /* ========================= NAV ========================= */
 function nav(k){
- ['tonight','library','voice','about'].forEach(s=>{
+ ['tonight','library','voice','shop','about'].forEach(s=>{
    $('scr-'+s).hidden = (s!==k);
    $('nav-'+s).classList.toggle('on', s===k);
  });
@@ -1128,6 +1182,109 @@ function renderStreak(){
 /* ========================= WELCOME ========================= */
 function closeWelcome(){localStorage.ds_welcome='1';$('welcome').classList.remove('show');}
 
+/* ===================================================================
+   =====================  SHOP — physical products  ==================
+   ===================================================================
+   Flexible catalog. Physical goods => NO App Store 30% cut; checkout
+   runs through Stripe like Pro. A product starts selling the moment it
+   has a Stripe Payment Link in `buyLink`; until then it shows a clear
+   "preview" state. The Shop TAB stays hidden from customers until
+   NS_SHOP.LIVE=true (or the private ?shop=1 preview link). =========== */
+const NS_PRODUCTS = [
+  {
+    id:'sleep-headband',
+    name:'NightScript Sleep Headband',
+    tagline:'Bluetooth headphones built into a soft sleep mask — made for side-sleepers.',
+    price:24.99,
+    compareAt:39.99,
+    img:'',                 /* '' => placeholder tile; set a photo path once approved */
+    emoji:'🎧',
+    badge:'New',
+    inStock:true,
+    buyLink:'',             /* Stripe Payment Link — '' => preview only (not charging yet) */
+    bullets:[
+      'Ultra-thin flat speakers — lie on your side with no pressure on your ears',
+      'Up to 10 hours of play — comfortably covers a full night',
+      'Soft, breathable, machine-washable band (the electronics pop out first)',
+      'Doubles as a sleep mask — blocks light while it plays your mantras',
+      'Pairs in seconds with any phone'
+    ]
+  }
+];
+function money(n){ return '$'+Number(n).toFixed(2); }
+let PQTY=1, currentProductId=null;
+const NS_SHOP = {
+  LIVE:false,     /* flip to true to show the Shop to every customer */
+  _resolveFlag(){
+    try{ const qp=new URLSearchParams(location.search||'');
+      if(qp.get('shop')==='1'||qp.get('preview')==='shop'){ localStorage.ns_shop_preview='1'; }
+      if(qp.get('shop')==='0'){ localStorage.removeItem('ns_shop_preview'); }
+    }catch(e){}
+  },
+  visible(){ this._resolveFlag(); if(this.LIVE) return true;
+    try{ return localStorage.ns_shop_preview==='1'; }catch(e){ return false; } },
+  get(id){ return NS_PRODUCTS.find(p=>p.id===id); }
+};
+function pthumb(p){
+  if(p.img) return `<img src="${p.img}" alt="${p.name}">`;
+  return `<span>${p.emoji||'🛍️'}</span><span class="samp">sample photo</span>`;
+}
+function renderShop(){
+  const grid=$('shopGrid'); if(!grid) return;
+  const bar=$('shopPreviewBar');
+  if(bar) bar.innerHTML = NS_SHOP.LIVE ? '' :
+    `<div class="previewbar">🛠️ <span><b>Preview — only you can see this.</b> Customers don't see the Shop yet. Prices &amp; photos below are placeholders until you approve them.</span></div>`;
+  grid.innerHTML='';
+  NS_PRODUCTS.forEach(p=>{
+    const d=document.createElement('div'); d.className='pcard';
+    d.innerHTML=
+      `<div class="pthumb">${pthumb(p)}${p.badge?`<span class="pbadge">${p.badge}</span>`:''}</div>`+
+      `<div class="pbody"><div class="pn">${p.name}</div><div class="pt">${p.tagline}</div>`+
+      `<div class="pricerow"><span class="pprice">${money(p.price)}</span>`+
+      (p.compareAt?`<span class="pcompare">${money(p.compareAt)}</span>`:'')+
+      (p.inStock?`<button class="pbuy">View</button>`:`<span class="poos">Sold out</span>`)+
+      `</div></div>`;
+    d.onclick=()=>openProduct(p.id);
+    grid.appendChild(d);
+  });
+}
+function openProduct(id){
+  const p=NS_SHOP.get(id); if(!p) return; PQTY=1; currentProductId=id;
+  const el=$('productBody'); if(!el) return;
+  el.innerHTML=
+    `<div class="pdetail-thumb">${pthumb(p)}</div>`+
+    `<h2>${p.name}</h2>`+
+    `<div class="price">${money(p.price)}${p.compareAt?`  <span class="pcompare">${money(p.compareAt)}</span>`:''}</div>`+
+    `<div class="small center" style="margin:2px 0 8px">${p.tagline}</div>`+
+    `<ul class="feat pfeat">`+p.bullets.map(b=>`<li>${b}</li>`).join('')+`</ul>`+
+    `<div class="qtyrow"><button onclick="setQty(-1)">−</button><span class="qn" id="pqn">1</span><button onclick="setQty(1)">+</button></div>`+
+    `<button class="bigbtn" id="pbuyBtn" onclick="buyProduct('${p.id}')">${p.inStock?('Buy — '+money(p.price)):'Sold out'}</button>`+
+    `<div class="small center" style="margin-top:10px;opacity:.72">Ships from us · Secure card checkout${NS_SHOP.LIVE?'':' · preview only'}</div>`;
+  $('productModal').classList.add('show');
+}
+function setQty(dir){ PQTY=Math.max(1,Math.min(10,PQTY+dir)); const n=$('pqn'); if(n) n.textContent=PQTY;
+  const p=NS_SHOP.get(currentProductId), b=$('pbuyBtn');
+  if(p&&b&&p.inStock) b.textContent = PQTY>1 ? ('Buy ×'+PQTY+' — '+money(p.price*PQTY)) : ('Buy — '+money(p.price)); }
+function closeProduct(){ $('productModal').classList.remove('show'); }
+function buyProduct(id){
+  const p=NS_SHOP.get(id); if(!p||!p.inStock) return;
+  if(p.buyLink){
+    let url=p.buyLink;
+    try{ const u=NS_AUTH.getUser(); if(u&&u.email) url+=(url.indexOf('?')>-1?'&':'?')+'prefilled_email='+encodeURIComponent(u.email); }catch(e){}
+    toast('Opening secure checkout…');
+    try{ window.location.assign(url); }catch(e){ window.open(url,'_blank'); }
+    return;
+  }
+  toast('Preview only — checkout switches on once you approve the photo & price.');
+}
+function applyShopVisibility(){
+  const show=NS_SHOP.visible();
+  const btn=$('nav-shop'); if(btn) btn.style.display = show?'':'none';
+  if(show){ try{ renderShop(); }catch(e){} }
+  try{ const qp=new URLSearchParams(location.search||'');
+    if(show && (qp.get('shop')==='1'||qp.get('preview')==='shop')) nav('shop'); }catch(e){}
+}
+
 /* ========================= INIT ========================= */
 /* v2: one call that refreshes every tier-gated + account surface (used after Pro flips) */
 function renderAll(){
@@ -1145,6 +1302,7 @@ NS_AUTH.init();
 applyAuthGate();
 renderAccount(); renderSyncPill();
 renderPresets(); renderTimers(); bindSliders(); renderCats(); renderStreak();
+applyShopVisibility();
 nsMigrateLegacy().then(refreshRecs, refreshRecs);
 try{ NS_BILLING.handleReturn(); }catch(e){}
 window.addEventListener('online',()=>{ if(NS_SYNC.can()) NS_SYNC.syncAll('push'); });
@@ -1153,6 +1311,7 @@ window.addEventListener('offline',()=>{ if(NS_SYNC.can()) NS_SYNC.setStatus('off
 /* v2: re-render every tier-gated surface whenever auth/entitlement changes */
 NS_AUTH.onAuthChange(()=>{
   renderAccount(); renderSyncPill(); renderPresets(); renderTimers(); refreshRecs();
+  applyShopVisibility();
   applyAuthGate();
   try{ if(NS_AUTH.getUser() && !localStorage.ds_welcome) $('welcome').classList.add('show'); }catch(e){}
 });
